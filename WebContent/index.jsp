@@ -1,22 +1,40 @@
-<%@page import="java.awt.Button"%>
-<%@page import="java.util.List"%>
-<%@page import="java.nio.file.Files"%>
-<%@page import="java.nio.file.Paths"%>
-<%@page import="org.apache.jasper.tagplugins.jstl.core.Catch"%>
-<%@page import="java.util.Date"%>
-<%@page import="java.text.SimpleDateFormat"%>
-<%@page import="java.nio.file.attribute.BasicFileAttributes"%>
-<%@page import="java.util.StringTokenizer"%>
-<%@page import="java.io.*"%>
-<%@page import="java.net.URL"%>
+<%@page import="java.awt.Color"%>
+<%@page import="java.awt.Graphics"%>
+<%@page import="java.io.OutputStream"%>
+<%@page import="java.io.InputStreamReader"%>
+<%@page import="java.io.InputStream"%>
+<%@page import="java.io.DataOutputStream"%>
+<%@page import="java.io.FileOutputStream"%>
+<%@page import="java.io.BufferedReader"%>
+<%@page import="java.io.StringReader"%>
+<%@page import="java.io.DataInputStream"%>
+<%@page import="java.io.IOException"%>
+<%@page import="java.io.ByteArrayOutputStream"%>
 <%@page import="java.io.FileInputStream"%>
 <%@page import="java.io.BufferedInputStream"%>
 <%@page import="java.io.PrintWriter"%>
+<%@page import="java.io.File"%>
+<%@page import="java.util.Date"%>
 <%@page import="java.util.Arrays"%>
+<%@page import="java.util.List"%>
+<%@page import="java.util.Base64"%>
+ 
+<%@page import="java.util.StringTokenizer"%>
+<%@page import="java.awt.Button"%>
+<%@page import="java.awt.image.BufferedImage"%>
+<%@page import="java.text.SimpleDateFormat"%>
+ 
 <%@page import="java.net.URLDecoder"%>
 <%@page import="java.net.URLEncoder"%>
+<%@page import="java.nio.file.Files"%>
+<%@page import="java.nio.file.Paths"%>
+<%@page import="java.nio.file.attribute.BasicFileAttributes"%>
+<%@page import="javax.imageio.ImageIO"%>
+<%@page import="javax.swing.Icon"%>
+<%@page import="javax.swing.ImageIcon"%>
+<%@page import="javax.swing.filechooser.FileSystemView"%>
+<%@page import="org.apache.jasper.tagplugins.jstl.core.Catch"%>
 <%@page import="org.apache.catalina.tribes.io.XByteBuffer"%>
-<%@page import="java.io.File"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -25,68 +43,27 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title> </title>
 <style type="text/css">
-body{
- 
-          
-background-repeat:space;
-background-size:100% 1080px; 
-background-image: url(http://pic1.win4000.com/wallpaper/4/57e3770961389.jpg);
-color:yellow;
-background-attachment:scroll 
-}
-a:link{     					 /*超链接正常状态下在样式*/
-      color:black;    			 
-      text-decoration:none       /*无下划线*/
-}
-a:active{
-color:yellow;					/*超链接鼠标按下样式*/
-}
-a:link:hover{		
-color:blue;						/*超链接鼠标掠过样式*/
-}
-a:visited {						
-color:red;					/*超链接被访问后样式*/
-} 		
- 
-td{
-text-align:left;
-padding-left: 20px;
-border: 1px #B0C4DE solid;
-height: 21px;
-color:yellow;
-}
-table{
-position:relative;
-cellspacing:0px;
-cellpadding:0px;
-border-spacing: 0px;
-border: 1px #B0C4DE solid; 
-width:80%;
-margin-left:10%;
-margin-right:10%;
-margin-top: 0px;
- 
-}
- 
-.list{
-position: relative;
-top: 0px;
-}
-.filelist{
-position: absolute;
-top:-1px;
-}
-#file{
-color:yellow;
-background-color: red;l
-}
-#folder{
-color: red;
-background-color: yellow;
-}
+ body{
+ background-repeat:space;
+ background-size:100% 1080px;
+ background-attachment:scroll;
+ background-image:url(http://pic1.win4000.com/wallpaper/4/57e3770961389.jpg);
+ color:black;
+
+ font:18px red 微软雅黑
+ }
+ a:link{color:black;text-decoration:none}
+ a:active{color:yellow}
+ a:link:hover{color:red}
+ a:visited{color:black}
+ td{text-align:left;padding-left:20px;border:1px #B0C4DE solid;height:21px;color:black}
+ table{position:relative;cellspacing:0;cellpadding:0;border-spacing:0;border:1px #B0C4DE solid;width:80%;margin-left:10%;margin-right:10%;margin-top:0}
+/*  #file{color:yellow;background-color:red;} */
+/*  #folder{color:red;background-color:yellow} */
+ .list{position:relative;top:0}
+ .filelist{position:absolute;top:-1px}
 </style>
 <script type="text/javascript">
-	//<a href='"+ url+"?dir="+ xx+"&action=rename'>
 	function rename(ele) {
 		var namecol=ele.parentElement.previousElementSibling.previousElementSibling.previousElementSibling
 		var showoldname=namecol.innerHTML.split(">")[1].split("<")[0]
@@ -127,106 +104,99 @@ static boolean Refresh=false;
 static HttpServletRequest req=null;
 static HttpServletResponse res=null;
 static File[] FileRoot = File.listRoots();
+static Base64.Decoder decoder = Base64.getDecoder();
+static Base64.Encoder encoder = Base64.getEncoder();
+ 
 
-static String ListPath(String x,String ac,File F){
-    String CreateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(F.lastModified()));  
-	String xx= encode(x);
+
+static String ListPath( String ac,File file){
+    //long size=getFileSize(F);
+
+    String CreateTime = "<td> "+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(file.lastModified()))+"</td>";  
+	String renameStr="<td><input type='button' onclick='rename(this)' value='重命名 '></td>";
+	String fhiddeStr="<td style='color:red'>"+(file.isHidden()?"√":"×")+"</td>";
+	String fReadsStr="<td style='color:red'>  "+(file.canRead()?"√":"×")+"</td>";
+	String requrlStr="<a href='"+ url+"?dir="+ encode(file.getAbsolutePath())+"&action=";
+	String fiSizeStr="<td>"+(file.length()/1024>1024?file.length()/1024/1024+"MB":file.length()/1024+"KB")+"</td>";
+	String imgurlStr="";
+	//String dirSizeStr="<td>"+(size/1024>1024?size/1024/1024+"MB":size/1024+"KB")+"</td>";
 	if(ac.equals("isRoot")){
-	     tag= " <td><a href='"+ url+"?dir="+ xx+"&action=list'>"+x+"</a></td> ";
+	    tag= " <td><a href='"+ url+"?dir="+ encode(file.getPath())+"&action=list'>"+file.getPath()+"</a></td> ";
 	}else if(ac.equals("isDir")){
-	    long size=getFileSize(F);
-	    tag= "<tr><td id='folder'>文件夹 </td><td><a href='"+ url+"?dir="+ xx+"&action=list'>"+F.getName()+"</a></td>"
-		     +"<td></td>"
-			 +"<td></td>"
-			 +"<td><input type='button' onclick='rename(this)' value='重命名 '></td>"
-			 +"<td>"+(size/1024>1024?size/1024/1024+"MB":size/1024+"KB")+"</td>"
-			 +"<td style='color:red'>"+(F.isHidden()?"√":"×")+"</td>"
-			 +"<td style='color:red'>"+(F.canRead()?"√":"×")+"</td>"
-		     +"<td>"+CreateTime+"</td>"   
-	         +"</tr><br/>";
+	    tag= "<tr><td id='folder'><img src='"+imgencode64(file)+"'/> </td><td><a href='"+ url+"?dir="+encode(file.getPath())+"&action=list'>"+file.getName()+"</a></td>"
+		     +"<td></td>"+"<td></td>"+renameStr+"<td></td>"+fhiddeStr+fReadsStr+CreateTime+"</tr>";
 	}else if(ac.equals("isFileDownLink")){
-	    tag= "<td> <a href='"+ url+"?dir="+ xx+"&action=down'>下载  </a></td>"
-		     +"<td><a href='"+ url+"?dir="+ xx+"&action=del'>删除  </a></td>"
-			 +"<td><input type='button' onclick='rename(this)' value='重命名 '></td>"
-		     +"<td>"+(F.length()/1024>1024?F.length()/1024/1024+"MB":F.length()/1024+"KB")+"</td>"
-			 +"<td style='color:red'>"+(F.isHidden()?"√":"×")+"</td>"
-			 +"<td style='color:red'>"+(F.canRead()?"√":"×")+"</td>"
-		     +"<td> "+CreateTime+"</td>"
-		     +"</tr>";
+	    tag= "<td>"+requrlStr+"down'>下载  </a></td><td>"+requrlStr+"del'>删除  </a></td>"
+			 +renameStr+fiSizeStr+fhiddeStr+fReadsStr+CreateTime+"</tr>";
 	}else {
-	    tag="<tr><td id='file'>文件 </td>"
-	     +"<td><a href='"+ url+"?dir="+ encode(F.getAbsolutePath())+"&action=edit'>"+x+"</a></td>";
+	    tag="<tr><td id='file'><img src='"+imgencode64(file)+"'/> </td><td>"+requrlStr+"edit'>"+file.getName()+"</a></td>";
 	}
 	return tag;
 }
- 
-static String DownPath(String x){
-	String xx= encode(x);
-	String list =decode("down");
-	String tag= "<a href='"+ url+"?dir="+ xx+"&action="+list+"'>下载</a>\r\n";
-	return tag;
-}
-static String encode(String x){
+static String imgencode64(File file){//文件icon图标的Base64编码
+ ImageIcon icon=(ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file);
+ BufferedImage bu = new BufferedImage(icon.getIconWidth(),icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+     Graphics g=bu.getGraphics();
+     g.setColor(Color.WHITE);
+	 g.fillRect(0,0,50,50);//填充整个画布为白色  
+	 g.drawImage(icon.getImage(), 0, 0, icon.getIconWidth(), icon.getIconHeight(),null);
+     ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
+     try{
+     ImageIO.write(bu, "png", imageStream);
+     }catch(Exception e){
+     } 
+  byte[] tagInfo = imageStream.toByteArray();
+  return "data:image/png;base64,"+encoder.encodeToString(tagInfo); 
+ }
+@SuppressWarnings("deprecation")
+static String encode(String x){//url编码
 	return  URLEncoder.encode(x);
 }
-static String decode(String x){
-	return  URLDecoder.decode(x);
+@SuppressWarnings("deprecation")
+static String decode(String x){//url解码
+	return URLDecoder.decode(x);
 }
 static void load(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException,IOException {
+			throws ServletException,IOException {//文件上传
 	 	String filename="";
-		// 1.判断当前request消息实体的总长度
 		int totalBytes = request.getContentLength();
-		
 		System.out.println("当前数据总长度:" + totalBytes);
-		
-		// 2.在消息头类型中找出分解符,例如:boundary=----WebKitFormBoundaryeEYAk4vG4tRKAlB6
 		String contentType = request.getContentType();
-		
 		int position = contentType.indexOf("boundary=");
 		String startBoundary = "--" + contentType.substring(position + "boundary=".length());
 		String endBoundary = startBoundary + "--";
-		// 将request的输入流读入到bytes中
 		InputStream inputStream = request.getInputStream();
 		DataInputStream dataInputStream = new DataInputStream(inputStream);
 		byte[] bytes = new byte[totalBytes];
 		dataInputStream.readFully(bytes);
 		dataInputStream.close();
-		 
 		BufferedReader reader = new BufferedReader(new StringReader(new String(bytes)));
 		int temPosition = 0;
 		boolean flag = false;
 		int end = 0;
 		while (true) {
-			
 			if (flag) {// 当读取一次文件信息后
 				bytes = subBytes(bytes, end, totalBytes);
 				temPosition = 0;
 				reader = new BufferedReader(new StringReader(new String(bytes)));
 			}
-			// 读取一行的信息:------WebKitFormBoundary5R7esAd459uwQsd5,即:lastBoundary
 			String str = reader.readLine();
 			System.out.println("this line is:" + str);
-			// 换行算两个字符
 			temPosition += str.getBytes().length + 2;
-			// endBoundary:结束
 			if (str == null || str.equals(endBoundary)) {
 				break;
 			}
-			// 表示头信息的开始(一个标签,input,select等)
-			if (str.startsWith(startBoundary)) {
-				// 判断当前头对应的表单域类型
+			if (str.startsWith(startBoundary)) {// 判断当前头对应的表单域类型是否是文件上传
 				str = reader.readLine(); // 读取当前头信息的下一行:Content-Disposition行
 				temPosition += str.getBytes().length + 2;
 	            System.out.println(str+233);
-				int position1 = str.indexOf("filename="); // 判断是否是文件上传
-				if (position1 == -1) {// 表示是普通文本域上传
-					reader.readLine();
-					 str=reader.readLine();				     
-					  System.out.println("编辑文件aaa");
+				if (str.indexOf("filename=") == -1) {//如果是普通文本域表单
+					  reader.readLine();
+					  str=reader.readLine();				     
+					  System.out.println("编辑文件");
 					  System.out.println("普通文本域表单值"+str);
 					 // callCmd(cmd);
-				} else {// position1!=-1,表示是文件上传
+				} else {//如果是文件上传表单
 					StringTokenizer Fn= new StringTokenizer(str,"\\\"");
 					while(Fn.hasMoreElements()){//获取文件名
 						filename =  Fn.nextToken();
@@ -237,14 +207,13 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 					}else if(dir==null){
 					    msg="请跳转至可用的目录";
 					    break;
-					}else {System.out.println("保存的文件名："+filename);
+					}else {
+					System.out.println("保存的文件名："+filename);
 					filename=new String (filename.getBytes(),"utf-8");
 					temPosition += (reader.readLine().getBytes().length + 4);
-					
 					end =  locateEnd(bytes, temPosition, totalBytes, endBoundary);
-					
 					//String Savepath = request.getSession().getServletContext().getRealPath("/");
-					//String SavePath = System.getProperty("user.home") + "\\Documents\\";
+					//String SavePath = System.getProperty("user.home") + "\\    \\";
 					String SavePath =dir+"\\"+filename;
 					System.out.println(SavePath);
 						DataOutputStream dOutputStream = new DataOutputStream(
@@ -253,14 +222,13 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 						dOutputStream.close();
 						msg=dir+filename+"上传成功！";
 					} 
-				 
 					flag = true;
 				}
 			}
 		}
 	}
  
-	public static int locateEnd(byte[] bytes, int start, int end, String endStr) {
+	public static int locateEnd(byte[] bytes, int start, int end, String endStr) { //计算文件结束符的位置
 		byte[] endByte = endStr.getBytes();
 		
 		for (int i = start + 1; i < end; i++) {
@@ -272,15 +240,14 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 					}
 					k++;
 				}
-				//System.out.println(i);
 				if (i == 3440488) {
 					System.out.println("start");
-				}
+				}  
 				// 返回结束符的开始位置
 				if (k == endByte.length) {
 					return i;
 				}
-			}
+			}  
 		}
 
 		return 0;
@@ -311,7 +278,7 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 		System.arraycopy(b, from, result, 0, end - from);
 		return result;
 	}
-    public static long getFileSize(File file) { // 取得文件夹大小
+    public static long getFileSize(File file) { // 取得文件夹所有子文件夹及文件的磁盘占用大小
 		long size = 0;
 		try {
 		    File flist[] = file.listFiles();
@@ -330,7 +297,7 @@ static void load(HttpServletRequest request, HttpServletResponse response)
  		}
 		return size;
 	  }
-    public static String rename(String newname,String oldname){
+    public static String rename(String newname,String oldname){//文件重命名
 	    System.out.println("文件重命名\n新的名称"+newname+"\n旧的文件名"+oldname);
 	    if(!oldname.equals(newname)){
 	        File oldfile=new File(dir+"/"+oldname); 
@@ -345,6 +312,43 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 	    }
 	    return msg;
     }
+    static String fileType(String fileName) {
+
+	// 获取文件后缀名并转化为写，用于后续比较
+	String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
+	// 创建图片类型数组
+	String img[] = { "bmp", "jpg", "jpeg", "png", "tiff", "gif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr",
+		"pcd", "dxf", "ufo", "eps", "ai", "raw", "wmf" };
+	for (int i = 0; i < img.length; i++) {
+	    if (img[i].equals(fileType)) {
+		return "图片";
+	    }
+	}
+
+	// 创建文档类型数组
+	String document[] = { "txt", "doc", "docx", "xls", "htm", "html", "jsp", "rtf", "wpd", "pdf", "ppt" };
+	for (int i = 0; i < document.length; i++) {
+	    if (document[i].equals(fileType)) {
+		return "文档";
+	    }
+	}
+	// 创建视频类型数组
+	String video[] = { "mp4", "avi", "mov", "wmv", "asf", "navi", "3gp", "mkv", "f4v", "rmvb", "webm" };
+	for (int i = 0; i < video.length; i++) {
+	    if (video[i].equals(fileType)) {
+		return "视频";
+	    }
+	}
+	// 创建音乐类型数组
+	String music[] = { "mp3", "wma", "wav", "mod", "ra", "cd", "md", "asf", "aac", "vqf", "ape", "mid", "ogg",
+		"m4a", "vqf" };
+	for (int i = 0; i < music.length; i++) {
+	    if (music[i].equals(fileType)) {
+		return "音乐";
+	    }
+	}
+	return "其他";
+    }
  %>
  
  
@@ -356,7 +360,7 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 <table>
 <tr>
 <%
-for(File x:FileRoot)out.println(ListPath(x.getPath(),"isRoot",x));
+for(File x:FileRoot)out.println(ListPath( "isRoot",x));
 %>
 <td>
 <form  enctype="multipart/form-data" method="post">
@@ -388,7 +392,6 @@ for(File x:FileRoot)out.println(ListPath(x.getPath(),"isRoot",x));
 		<td>创建日期</td>
  	</tr>
 <% 
-
 if(dir!=""){
 	if(action.equals("list")){
 	    System.out.println("获取文件列表");
@@ -398,16 +401,16 @@ if(dir!=""){
 			File[] file=new File(dir).listFiles() ;
 			 for(File x:file){
 				   if(x.isFile()){ 
-						out.println(ListPath(x.getName(),"isFile",x)); 
-						out.println(ListPath(x .getAbsolutePath(),"isFileDownLink",x) );
+						out.println(ListPath( "isFile",x)); 
+						out.println(ListPath( "isFileDownLink",x) );
 				   }else if(x.isDirectory()){
-					    out.println(ListPath(x.getPath(),"isDir",x) );
-					}
+					    out.println(ListPath( "isDir",x) );
+				   }
 			 }
 		}catch(Exception e){
 		    o.println("拒绝访问");
 		}
-	}else if(action.equals("down") ){
+	}else if(action.equals("down") ){//文件下载 
 	    System.out.println("下载文件"+dir);
 	    try{
 			File f = new File(dir);
@@ -426,7 +429,7 @@ if(dir!=""){
 	    }catch(Exception e){
 			o.println(e.getMessage());
 	    }
-	}else if(action.equals("del")){
+	}else if(action.equals("del")){//删除文件
 	    System.out.println("删除文件"+dir);
 	    File f=new File(dir);
 	    if(f.isFile()){
@@ -440,8 +443,11 @@ if(dir!=""){
 			    o.println(dir+"没有读写权限");
 			}	
 	    } 
-	} else if(action.equals("edit") ){
+	    url="index.jsp?dir="+ encode(f.getParent())+"&action=list";
+	    req.getRequestDispatcher(url).forward(req, res);
+	} else if(action.equals("edit") ){//预览txt
 	    System.out.println("预览文件");
+		 
 		%>
 		</table>
 		</div>
@@ -450,9 +456,6 @@ if(dir!=""){
 		<textarea cols="50" rows="10" name="save" ><%= new String(Files.readAllBytes(Paths.get(dir)) ,"GBK")%></textarea> 
 		<a href="<%=req.getRequestURI()%>"><input type="button" value="关闭"  ></a>
 		</form>
-		<script type="text/javascript">
-		 
-		</script>
 	<%}
 	}
 %>
