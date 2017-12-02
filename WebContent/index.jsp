@@ -1,3 +1,5 @@
+<%@page import="java.net.URI"%>
+<%@page import="java.net.URL"%>
 <%@page import="java.awt.Color"%>
 <%@page import="java.awt.Graphics"%>
 <%@page import="java.io.OutputStream"%>
@@ -42,6 +44,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title> </title>
+
 <style type="text/css">
  body{
  background-repeat:space;
@@ -49,7 +52,6 @@
  background-attachment:scroll;
  background-image:url(http://pic1.win4000.com/wallpaper/4/57e3770961389.jpg);
  color:black;
-
  font:18px red 微软雅黑
  }
  a:link{color:black;text-decoration:none}
@@ -63,6 +65,7 @@
  .list{position:relative;top:0}
  .filelist{position:absolute;top:-1px}
 </style>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
 <script type="text/javascript">
 	function rename(ele) {
 		var namecol=ele.parentElement.previousElementSibling.previousElementSibling.previousElementSibling
@@ -77,7 +80,7 @@
 req=request;
 res=response;
 request.setCharacterEncoding("utf-8");
-url="index.jsp";
+url=request.getRequestURI();
 action=request.getParameter("action");
 dir=request.getParameter("dir");
 oldname=request.getParameter("oldName");
@@ -243,7 +246,6 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 				if (i == 3440488) {
 					System.out.println("start");
 				}  
-				// 返回结束符的开始位置
 				if (k == endByte.length) {
 					return i;
 				}
@@ -314,9 +316,9 @@ static void load(HttpServletRequest request, HttpServletResponse response)
     }
     static String fileType(String fileName) {
 
-	// 获取文件后缀名并转化为写，用于后续比较
+	 
 	String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
-	// 创建图片类型数组
+	 
 	String img[] = { "bmp", "jpg", "jpeg", "png", "tiff", "gif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr",
 		"pcd", "dxf", "ufo", "eps", "ai", "raw", "wmf" };
 	for (int i = 0; i < img.length; i++) {
@@ -325,22 +327,22 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 	    }
 	}
 
-	// 创建文档类型数组
+	 
 	String document[] = { "txt", "doc", "docx", "xls", "htm", "html", "jsp", "rtf", "wpd", "pdf", "ppt" };
 	for (int i = 0; i < document.length; i++) {
 	    if (document[i].equals(fileType)) {
 		return "文档";
 	    }
 	}
-	// 创建视频类型数组
+	 
 	String video[] = { "mp4", "avi", "mov", "wmv", "asf", "navi", "3gp", "mkv", "f4v", "rmvb", "webm" };
 	for (int i = 0; i < video.length; i++) {
 	    if (video[i].equals(fileType)) {
 		return "视频";
 	    }
 	}
-	// 创建音乐类型数组
-	String music[] = { "mp3", "wma", "wav", "mod", "ra", "cd", "md", "asf", "aac", "vqf", "ape", "mid", "ogg",
+	 
+	String music[] = { "mp3", "wma","wmv", "wav", "mod", "ra", "cd", "md", "asf", "aac", "vqf", "ape", "mid", "ogg",
 		"m4a", "vqf" };
 	for (int i = 0; i < music.length; i++) {
 	    if (music[i].equals(fileType)) {
@@ -359,22 +361,20 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 <div class="root">
 <table>
 <tr>
-<%
-for(File x:FileRoot)out.println(ListPath( "isRoot",x));
-%>
-<td>
-<form  enctype="multipart/form-data" method="post">
-<input type="submit" value="上传至当前目录 " size="50">
-    <input  type="file" name="file" size="30"  >  
-</form>
-</td>
-<td>
-<input type="button" value="返回上级目录" onclick="window.history.back()"> 
-</td>
+	<%for(File x:FileRoot)out.println(ListPath( "isRoot",x));%>
+	<td>
+		<form  enctype="multipart/form-data" method="post">
+			<input type="submit" value="上传至当前目录 " size="50">
+		    <input  type="file" name="file" size="30"  >  
+		</form>
+	</td>
+	<td>
+		<input type="button" value="返回上级目录" onclick="window.history.back()"> 
+	</td>
 </tr>
 <tr>
-<td colspan="2" style="min-width:80px;">当前目录 </td>
-<td colspan="10"> <%=msg%></td>
+	<td colspan="2" style="min-width:80px;">当前目录 </td>
+	<td colspan="10"> <%=msg%></td>
 <tr/>
 </table>
 </div>
@@ -422,8 +422,9 @@ if(dir!=""){
 			System.out.println(f.getName());
 			response.setHeader("Content-Disposition", "attachment; filename=\"" + f.getName()+"\"");
 			OutputStream ou = response.getOutputStream();
-			while ((len = br.read(buf)) > 0)
+			while ((len = br.read(buf)) > 0){
 				ou.write(buf, 0, len);
+			}
 			br.close();
 			ou.close();
 	    }catch(Exception e){
@@ -447,17 +448,51 @@ if(dir!=""){
 	    req.getRequestDispatcher(url).forward(req, res);
 	} else if(action.equals("edit") ){//预览txt
 	    System.out.println("预览文件");
-		 
-		%>
-		</table>
-		</div>
-		<form style="position:relative ;top:26px;left: 10%" id="showform"  method="post">
-		<input type="hidden" name="savename" value="<%=dir%>">
-		<textarea cols="50" rows="10" name="save" ><%= new String(Files.readAllBytes(Paths.get(dir)) ,"GBK")%></textarea> 
-		<a href="<%=req.getRequestURI()%>"><input type="button" value="关闭"  ></a>
-		</form>
-	<%}
+	    String type=fileType(dir );
+	    System.out.println(type);
+	     if(type.equals("文档")){
+			%>  
+				</table>
+				</div>
+				<form  style="position:relative ;top:26px;left: 10%" id="showform"  method="post">
+				<input type="hidden" name="savename" value="<%=dir%>">
+				<textarea cols="100" rows="10" name="save" ><%= new String(Files.readAllBytes(Paths.get(dir)) ,"utf-8")%></textarea> 
+				<a href="<%=req.getRequestURI()%>"><input type="button" value="关闭"  ></a>
+				</form>
+			<%
+		}else if(type.equals("图片")){
+		     String imgurl="data:image/png;base64,"+encoder.encodeToString(Files.readAllBytes(Paths.get(dir))); 
+		     out.println("<img  style='position: relative;top:28px;left:10%' class='showimg' src='"+imgurl+"'/>");
+// 		    File f = new File(dir);
+// 			if (!f.exists()) {
+// 			    response.sendError(404, "File not found!快点找吧老铁！");
+// 			    return;
+// 			}
+// 			BufferedInputStream br = new BufferedInputStream(new FileInputStream(f));
+// 			byte[] buf = new byte[1024];
+// 			int len = 0;
+// 			response.reset();// 去除空白行
+// 			  // 在线打开方式
+// 			    URL u = new URL("file:///" + dir);
+// 			    response.setContentType(u.openConnection().getContentType());
+// 			    response.setHeader("Content-Disposition", "inline; filename=" + f.getName());
+// 			    // 文件名应该编码成UTF-8
+// 			OutputStream outx = response.getOutputStream();
+// 			while ((len = br.read(buf)) > 0)
+// 			    outx.write(buf, 0, len);
+// 			br.close();
+// 			outx.close(); 
+		}else if(type.equals("视频")){
+// 		    String  video=request.getRequestURL()+"?action=down&dir="+encode(dir);  
+// 		    System.out.println("视频地址" +video);
+ 		 %>  
+<!-- 		     <video width="320" height="240" controls> -->
+<%--  				 <source src="<%=video%>" type="video/mp4"> --%>
+<!-- 			 </video> -->
+ 		  <%  
+		}
 	}
+}
 %>
 <!-- <form id="forcmd"  enctype="multipart/form-data" method="post" style="position:relative; top: 50%"> -->
 <!--     <input type="text" name="cmd" value="help" size="21">   -->

