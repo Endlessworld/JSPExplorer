@@ -24,14 +24,12 @@
 <%@page import="java.util.List"%>
 <%@page import="java.util.Base64"%>
 <%@page import="java.util.StringTokenizer"%>
-<%@page import="java.awt.Button"%>
 <%@page import="java.awt.image.BufferedImage"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.net.URLDecoder"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.nio.file.Files"%>
 <%@page import="java.nio.file.Paths"%>
-<%@page import="java.nio.file.attribute.BasicFileAttributes"%>
 <%@page import="javax.imageio.ImageIO"%>
 <%@page import="javax.swing.Icon"%>
 <%@page import="javax.swing.ImageIcon"%>
@@ -293,6 +291,7 @@
 	static File[] FileRoot = File.listRoots();
 	static Base64.Decoder decoder = Base64.getDecoder();
 	static Base64.Encoder encoder = Base64.getEncoder();
+	
 	static String ListPath( String ac,File file){
 	    //long size=getFileSize(F);
 	    req.setAttribute("Loginmsg", "");
@@ -316,6 +315,7 @@
 		}
 		return tag;
 	}
+	
 	static String imgencode64(File file){//文件icon图标的Base64编码
 	 ImageIcon icon=(ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file);
 	 BufferedImage bu = new BufferedImage(icon.getIconWidth(),icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
