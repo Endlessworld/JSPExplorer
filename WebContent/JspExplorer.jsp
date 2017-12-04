@@ -106,10 +106,10 @@
 	tr:hover{
 		background-color: #ffbf80
 		}
- 	.filelist{top:-2px}
+ 	.filelist{
+ 		top:-2px
+ 	}
  	.img{top:26px;left:10%;}
- 	/*#file{color:yellow;background-color:red;} */
- 	/*#folder{color:red;background-color:yellow} */
 </style>
 <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
 <script type="text/javascript">
