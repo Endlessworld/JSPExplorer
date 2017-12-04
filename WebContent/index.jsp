@@ -59,7 +59,7 @@
  a:visited{color:black}
  td{text-align:left;padding-left:20px;border:1px #B0C4DE solid;height:21px;color:black}
  table{position:relative;cellspacing:0;cellpadding:0;border-spacing:0;border:1px #B0C4DE solid;width:80%;margin-left:10%;margin-right:10%;margin-top:0}
- #forcmd{position: relative;width:80%;margin-top:20px;margin-left: 10%;}
+ #forcmd{position: relative;width:80%;margin-top:20px;margin-left: 10%;display: none}
  .list{position:relative;top:0}
  .filelist{position:absolute;top:-1px}
 </style>
