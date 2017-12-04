@@ -323,6 +323,7 @@
 		}
 		return tag;
 	}
+	
 	static String imgencode64(File file){//文件icon图标的Base64编码
 	 ImageIcon icon=(ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file);
 	 BufferedImage bu = new BufferedImage(icon.getIconWidth(),icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
@@ -658,8 +659,8 @@
 	<div class="CommandDiv"><input type="text" name="commandStr" size=25><input type="submit" onclick="sendCommand(this.previousSibling)"><textarea rows='33'></textarea>
 </div>
 <div class="helpDiv" >
-<iframe src="data:text/html;charset=utf-8;base64,PHVsPjxsaT5zaGlmdCtDL0QvRS9GL0cvSCDot7PliLDlr7nlupTnm5jnrKYgPC9saT48bGk+c2hpZnQrQS82NjYg5YiH5o2i5paH5Lu25YiX6KGo5LiO5o6n5Yi25Y+wIDwvbGk+PGxpPnNoaXRmK1gg5biu5YqpPC9saT48L3VsPg==" frameborder="0"></iframe>
-<%} %>
+	<iframe src="data:text/html;charset=utf-8;base64,PHVsPjxsaT5zaGlmdCtDL0QvRS9GL0cvSCDot7PliLDlr7nlupTnm5jnrKYgPC9saT48bGk+c2hpZnQrQS82NjYg5YiH5o2i5paH5Lu25YiX6KGo5LiO5o6n5Yi25Y+wIDwvbGk+PGxpPnNoaXRmK1gg5biu5YqpPC9saT48L3VsPg==" frameborder="0"></iframe>
+	<%} %>
  </div>							  
 </body>
 </html>
