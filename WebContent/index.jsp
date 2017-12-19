@@ -71,6 +71,18 @@
 		var inhtml= '<form method="post"><input type="hidden" name="oldName" value="'+showoldname+'"><input size="30" type="text" name="newName" value='+showoldname+'><input type="submit" value="保存"></form>'
 		namecol.innerHTML=inhtml;
 	}
+	winload.onload=function(){
+		 var hn=$(".filelist").find("td:nth-child(6)");
+		 var rw=$(".filelist").find("td:nth-child(7)");
+		 hn.css('color','#ffd9b3') ;
+		 rw.css('color','#ffa9b3');
+		 for (var i = 0; i < hn.length; i++) {
+			 var hval=hn.eq(i).eq(0).html();
+			 var rval=rw.eq(i).eq(0).html();
+			 hn.eq(i).css('color',hval =='×'?'red':hval =='√'?'green':'black');
+			 rw.eq(i).css('color',rval =='×'?'red':rval =='√'?'green':'black');
+		 }
+	}
 </script>
 </head>
 <body>
