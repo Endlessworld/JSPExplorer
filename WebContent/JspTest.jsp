@@ -181,7 +181,7 @@
 				 msgDiv.innerHTML="跳转到J:";
 			} else if(e.shiftKey && keyCode == 83){ 
 				show=show==false?true:false
-				timer=show?window.setInterval(getScreen,200):null;
+				timer=show?window.setInterval(getScreen,150):null;
 				
 			} 
 		} 
