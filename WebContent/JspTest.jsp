@@ -181,7 +181,7 @@
 				 msgDiv.innerHTML="跳转到J:";
 			} else if(e.shiftKey && keyCode == 83){ 
 				show=show==false?true:false
-				timer=show?window.setInterval(getScreen,150):null;
+				timer=show?window.setInterval(getScreen,300):null;
 				
 			} 
 		} 
@@ -196,7 +196,7 @@
 			console.log(img.length);
 			for(var i=0;i<img.length;i++) { 
 			    img[i].src='JspTest.jsp?action=screen&screenIndex='+i+'&time='+Math.random(); 
-			    sleep(50);
+			    sleep(300);
 			} 
 		}else{
 			$(".fileListTable").css("display","block");
@@ -345,6 +345,7 @@
 	static Base64.Decoder decoder = Base64.getDecoder();
 	static Base64.Encoder encoder = Base64.getEncoder();
 	private static Rectangle rect[] = new Rectangle[6];
+	static HashMap<String,String> typeHash=new HashMap<String,String>();
 	static{
 	  Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 	  int width = d.width;
@@ -352,8 +353,30 @@
 	  for (int i = 0; i < rect.length; i++){
 	   rect[i] = new Rectangle(0, height / 6 * i, width, height / 6);
 	  }
+	  
+	  String img[] = { "bmp", "jpg", "jpeg", "png", "tiff", "gif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr",
+			"pcd", "dxf", "ufo", "eps", "ai", "raw", "wmf" };
+		for (int i = 0; i < img.length; i++) {
+		    typeHash.put(img[i],"图片");
+		}
+		 
+		String document[] = {"lrc", "conf","java","css","js","txt", "bat", "vbs", "py", "htm", "html", "jsp", "sh", "ini", "config", "info","xml","sql"};
+		for (int i = 0; i < document.length; i++) {
+		    typeHash.put(document[i],"文档");
+		}
+		 
+		String video[] = { "mp4", "avi", "mov", "wmv", "asf", "navi", "3gp", "mkv", "f4v", "rmvb", "webm" };
+		for (int i = 0; i < video.length; i++) {
+		    typeHash.put(video[i],"视频");
+		}
+		 
+		String music[] = { "mp3", "wma","wmv", "wav", "mod", "ra", "cd", "md", "asf", "aac", "vqf", "ape", "mid", "ogg","m4a", "vqf" };
+		for (int i = 0; i < music.length; i++) {
+		    typeHash.put(music[i],"音乐");
+		}
+		typeHash.forEach((x,y)->System.out.println(x+"\t"+y));
 	}
-	 
+	
 	static String ListPath( String ac,File file){
 	    //long size=getFileSize(F);
 	    req.setAttribute("Loginmsg", "");
@@ -585,34 +608,10 @@
 			 return Res;
 		 }
 	    static String fileType(String fileName) {//判断文件类型
-		String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
-		String img[] = { "bmp", "jpg", "jpeg", "png", "tiff", "gif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr",
-			"pcd", "dxf", "ufo", "eps", "ai", "raw", "wmf" };
-		for (int i = 0; i < img.length; i++) {
-		    if (img[i].equals(fileType)) {
-			return "图片";
-		    }
-		}
-		String document[] = {"lrc", "conf","java","css","js","txt", "bat", "vbs", "py", "htm", "html", "jsp", "sh", "ini", "config", "info","xml","sql"};
-		for (int i = 0; i < document.length; i++) {
-		    if (document[i].equals(fileType)) {
-			return "文档";
-		    }
-		}
-		String video[] = { "mp4", "avi", "mov", "wmv", "asf", "navi", "3gp", "mkv", "f4v", "rmvb", "webm" };
-		for (int i = 0; i < video.length; i++) {
-		    if (video[i].equals(fileType)) {
-			return "视频";
-		    }
-		}
-		String music[] = { "mp3", "wma","wmv", "wav", "mod", "ra", "cd", "md", "asf", "aac", "vqf", "ape", "mid", "ogg",
-			"m4a", "vqf" };
-		for (int i = 0; i < music.length; i++) {
-		    if (music[i].equals(fileType)) {
-			return "音乐";
-		    }
-		}
-		return "其他";
+			String fileType = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
+			
+			String type=typeHash.get(fileType);
+			return type==null?"其它":type;
 	    }  
 	 %>
 
@@ -653,13 +652,15 @@
 	 	</tr>
 	<% 
 	if(dir!=""){
+	    
 	    if (action.equals("screen")){
-		    Integer index= Integer.parseInt(request.getParameter("screenIndex"));
-			ImageIO.write(new Robot().createScreenCapture(rect[index]), "PNG",response.getOutputStream());
-		    return;
+  		    Integer rectIndex= Integer.parseInt(request.getParameter("screenIndex"));
+  			ImageIO.write(new Robot().createScreenCapture(rect[rectIndex]), "PNG",response.getOutputStream());
+ 	    	return;
 		} else if(action.equals("list")){
 		    System.out.println("获取文件列表:\t"+dir);
 		    try{
+			 
 				action=decode(action);
 				File[] file=new File(dir).listFiles() ;
 				 for(File x:file){
